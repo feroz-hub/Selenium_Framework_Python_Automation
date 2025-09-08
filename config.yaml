@@ -1,0 +1,34 @@
+# Application Environment Settings
+env: "staging"
+
+environments:
+  staging:
+    base_url: "https://softwaredelivery-stg3.olympusmedical.com"
+    users:
+      software_uploader:
+        username: "48200010.olympusssa.onmicrosoft.com@amer.teams.ms"
+        password: "9xFXgZQR@kdgj"
+      distribution_manager:
+        username: "stg_manager"
+        password: "stg_manager_password"
+
+  prod:
+    base_url: "https://softwaredelivery.olympusmedical.com"
+    users:
+      software_uploader:
+        username: "prod_uploader"
+        password: "prod_uploader_password"
+      distribution_manager:
+        username: "prod_manager"
+        password: "prod_manager_password"
+base_url: "https://softwaredelivery-stg3.olympusmedical.com"
+browser: "chrome" # options : chrome, edge, safari, firefox
+headless: false
+implicit_wait: 5
+
+
+tests:
+  login:
+    - username: "48200010.olympusssa.onmicrosoft.com@amer.teams.ms"
+      password: "9xFXgZQR@kdgj"
+      expected: "success"

@@ -1,0 +1,6 @@
+pytest
+pytest-html
+pytest-metadata
+selenium
+webdriver-manager
+pyyaml

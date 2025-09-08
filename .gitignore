@@ -416,3 +416,34 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+# JetBrains Rider
+*.sln.iml
+**/.DS_Store
+**/.idea
+**/.DotSettings.user
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+.venv/
+env/
+venv/
+
+# IDE files
+.idea/
+.vscode/
+
+# OS files
+.DS_Store
+
+# Test Reports
+reports/
+*.html
+
+# Logs & temp
+logs/
+*.log
