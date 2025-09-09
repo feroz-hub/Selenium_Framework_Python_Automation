@@ -252,3 +252,245 @@ class BasePage:
         except (NoSuchElementException, TimeoutException):
             # no popup appeared, continue
             pass
+
+
+    def switch_to_frame(self, locator: tuple, timeout: int = 10):
+        """Waits for an iframe to be available and switches to it."""
+        WebDriverWait(self.driver, timeout).until(
+            EC.frame_to_be_available_and_switch_to_it(locator)
+        )
+
+    def switch_to_default_content(self):
+        """Switches the context back to the main document."""
+        self.driver.switch_to.default_content()
+
+    # Add these methods to your BasePage class
+
+    def click_checkbox(self, locator, timeout=10):
+        """
+        Click a checkbox (select/unselect based on current state).
+
+        Args:
+            locator: Tuple of (By, selector) for the checkbox
+            timeout: Maximum time to wait for element
+        """
+        element = self.wait_for_element_to_be_clickable(locator, timeout)
+        element.click()
+
+    def check_checkbox(self, locator, timeout=10):
+        """
+        Check (select) a checkbox if it's not already checked.
+
+        Args:
+            locator: Tuple of (By, selector) for the checkbox
+            timeout: Maximum time to wait for element
+        """
+        element = self.wait_for_element_to_be_clickable(locator, timeout)
+        if not element.is_selected():
+            element.click()
+
+    def uncheck_checkbox(self, locator, timeout=10):
+        """
+        Uncheck (deselect) a checkbox if it's currently checked.
+
+        Args:
+            locator: Tuple of (By, selector) for the checkbox
+            timeout: Maximum time to wait for element
+        """
+        element = self.wait_for_element_to_be_clickable(locator, timeout)
+        if element.is_selected():
+            element.click()
+
+    def is_checkbox_checked(self, locator, timeout=10):
+        """
+        Check if a checkbox is currently selected/checked.
+
+        Args:
+            locator: Tuple of (By, selector) for the checkbox
+            timeout: Maximum time to wait for element
+
+        Returns:
+            bool: True if checkbox is checked, False otherwise
+        """
+        element = self.wait_for_element_to_be_visible(locator, timeout)
+        return element.is_selected()
+
+    def toggle_checkbox(self, locator, timeout=10):
+        """
+        Toggle a checkbox (opposite of current state).
+
+        Args:
+            locator: Tuple of (By, selector) for the checkbox
+            timeout: Maximum time to wait for element
+
+        Returns:
+            bool: New state after toggle (True if now checked, False if unchecked)
+        """
+        element = self.wait_for_element_to_be_clickable(locator, timeout)
+        element.click()
+        return element.is_selected()
+
+    def set_checkbox_state(self, locator, desired_state, timeout=10):
+        """
+        Set checkbox to a specific state (checked/unchecked).
+
+        Args:
+            locator: Tuple of (By, selector) for the checkbox
+            desired_state: bool - True to check, False to uncheck
+            timeout: Maximum time to wait for element
+
+        Returns:
+            bool: Final state of checkbox
+        """
+        element = self.wait_for_element_to_be_clickable(locator, timeout)
+        current_state = element.is_selected()
+
+        if current_state != desired_state:
+            element.click()
+
+        return element.is_selected()
+
+    def check_multiple_checkboxes(self, locators, timeout=10):
+        """
+        Check multiple checkboxes at once.
+
+        Args:
+            locators: List of tuples [(By, selector), (By, selector), ...]
+            timeout: Maximum time to wait for each element
+        """
+        for locator in locators:
+            self.check_checkbox(locator, timeout)
+
+    def uncheck_multiple_checkboxes(self, locators, timeout=10):
+        """
+        Uncheck multiple checkboxes at once.
+
+        Args:
+            locators: List of tuples [(By, selector), (By, selector), ...]
+            timeout: Maximum time to wait for each element
+        """
+        for locator in locators:
+            self.uncheck_checkbox(locator, timeout)
+
+    def get_all_checked_checkboxes(self, container_locator=None, timeout=10):
+        """
+        Get all currently checked checkboxes in a container or entire page.
+
+        Args:
+            container_locator: Optional container to search within
+            timeout: Maximum time to wait for container (if specified)
+
+        Returns:
+            list: List of WebElements that are checked checkboxes
+        """
+        if container_locator:
+            container = self.wait_for_element_to_be_visible(container_locator, timeout)
+            checkboxes = container.find_elements(By.XPATH, ".//input[@type='checkbox']")
+        else:
+            checkboxes = self.driver.find_elements(By.XPATH, "//input[@type='checkbox']")
+
+        return [cb for cb in checkboxes if cb.is_selected()]
+
+    def get_checkbox_by_label(self, label_text, timeout=10):
+        """
+        Find and return checkbox by its associated label text.
+
+        Args:
+            label_text: Text content of the label associated with checkbox
+            timeout: Maximum time to wait for element
+
+        Returns:
+            WebElement: The checkbox element
+        """
+        # Try different common patterns for label-checkbox association
+        patterns = [
+            f"//label[contains(text(), '{label_text}')]/input[@type='checkbox']",
+            f"//input[@type='checkbox']/following-sibling::label[contains(text(), '{label_text}')]/../input[@type='checkbox']",
+            f"//label[contains(text(), '{label_text}')]/@for",  # for ID association
+        ]
+
+        for pattern in patterns:
+            try:
+                if pattern.endswith('/@for'):
+                    # Handle label 'for' attribute case
+                    label_for_id = self.driver.find_element(By.XPATH, pattern).get_attribute('for')
+                    return self.wait_for_element_to_be_visible((By.ID, label_for_id), timeout)
+                else:
+                    return self.wait_for_element_to_be_visible((By.XPATH, pattern), timeout)
+            except:
+                continue
+
+        raise NoSuchElementException(f"Checkbox with label '{label_text}' not found")
+
+    def click_checkbox_by_label(self, label_text, timeout=10):
+        """
+        Click checkbox by its associated label text.
+
+        Args:
+            label_text: Text content of the label associated with checkbox
+            timeout: Maximum time to wait for element
+        """
+        checkbox = self.get_checkbox_by_label(label_text, timeout)
+        checkbox.click()
+
+    def verify_checkbox_state(self, locator, expected_state, timeout=10):
+        """
+        Verify that a checkbox is in the expected state.
+
+        Args:
+            locator: Tuple of (By, selector) for the checkbox
+            expected_state: bool - True if should be checked, False if unchecked
+            timeout: Maximum time to wait for element
+
+        Returns:
+            bool: True if checkbox is in expected state, False otherwise
+        """
+        actual_state = self.is_checkbox_checked(locator, timeout)
+        return actual_state == expected_state
+
+    def wait_for_checkbox_state(self, locator, expected_state, timeout=10):
+        """
+        Wait for a checkbox to reach a specific state.
+
+        Args:
+            locator: Tuple of (By, selector) for the checkbox
+            expected_state: bool - True to wait for checked, False for unchecked
+            timeout: Maximum time to wait
+
+        Returns:
+            bool: True if state reached within timeout, False otherwise
+        """
+        from selenium.webdriver.support import expected_conditions as EC
+        from selenium.webdriver.support.ui import WebDriverWait
+
+        try:
+            if expected_state:
+                # Wait for checkbox to be selected
+                WebDriverWait(self.driver, timeout).until(
+                    lambda driver: driver.find_element(*locator).is_selected()
+                )
+            else:
+                # Wait for checkbox to be unselected
+                WebDriverWait(self.driver, timeout).until(
+                    lambda driver: not driver.find_element(*locator).is_selected()
+                )
+            return True
+        except TimeoutException:
+            return False
+
+    # Helper method for checkbox groups (like terms & conditions, preferences, etc.)
+    def handle_checkbox_group(self, checkboxes_config, timeout=10):
+        """
+        Handle a group of checkboxes based on configuration.
+
+        Args:
+            checkboxes_config: Dict with checkbox locators as keys and desired states as values
+                              Example: {
+                                  (By.ID, "terms"): True,
+                                  (By.ID, "newsletter"): False,
+                                  (By.ID, "notifications"): True
+                              }
+            timeout: Maximum time to wait for each element
+        """
+        for locator, desired_state in checkboxes_config.items():
+            self.set_checkbox_state(locator, desired_state, timeout)

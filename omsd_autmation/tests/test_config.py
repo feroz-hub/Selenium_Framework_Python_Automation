@@ -19,7 +19,7 @@ DEFAULT_PRODUCT = "ESG-410"
 TEST_PRODUCTS: List[str] = ["ESG-410", "ESG-420"]
 
 # Test file configuration
-TEST_FILE_NAME = "ESG-410_v01.00.00.00-New"
+TEST_FILE_NAME = "ESG-410_v01.00.00.00-New_3"
 
 # Timeout configuration (in seconds)
 DEFAULT_TIMEOUT = 15
