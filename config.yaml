@@ -33,4 +33,4 @@ tests:
       password: "9xFXgZQR@kdgj"
       expected: "success"
 upload_files:
-  esg_410: "omsd_autmation/uploads/ESG-410_v01.00.00.00-New_3"
+  esg_410: "omsd_autmation/uploads/ESG-410_v01.00.00.00-New_7"

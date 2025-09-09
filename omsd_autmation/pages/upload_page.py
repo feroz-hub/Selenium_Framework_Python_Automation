@@ -7,7 +7,7 @@ from selenium.common.exceptions import TimeoutException
 from omsd_autmation.pages.base_page import BasePage
 # Import the class-level logger utility
 from omsd_autmation.utils.logger import get_class_logger
-
+import time
 import os
 class UploadPage(BasePage):
     """Page object for Upload Software popup."""
@@ -93,20 +93,48 @@ class UploadPage(BasePage):
             self.log.wait_timeout("File name did not appear in the toast.", timeout)
             raise  # Re-raise exception to fail the test
 
-    def wait_for_toast(self, timeout=20):
-        """Waits for a toast message and returns its full text."""
-        self.log.wait_start("Waiting for a toast message to appear.", timeout)
-        try:
-            toast_element = WebDriverWait(self.driver, timeout).until(
-                EC.visibility_of_element_located(self.TOAST_CONTAINER)
-            )
-            message = toast_element.text
-            self.log.wait_success(f"Toast message appeared with text: '{message}'")
-            return message
-        except TimeoutException:
-            self.log.wait_timeout("Toast message did not appear.", timeout)
-            raise  # Re-raise exception to fail the test
+    # def wait_for_toast(self, timeout=20):
+    #     """Waits for a toast message and returns its full text."""
+    #     self.log.wait_start("Waiting for a toast message to appear.", timeout)
+    #     try:
+    #         toast_element = WebDriverWait(self.driver, timeout).until(
+    #             EC.visibility_of_element_located(self.TOAST_CONTAINER)
+    #         )
+    #         message = toast_element.text
+    #         self.log.wait_success(f"Toast message appeared with text: '{message}'")
+    #         return message
+    #     except TimeoutException:
+    #         self.log.wait_timeout("Toast message did not appear.", timeout)
+    #         raise  # Re-raise exception to fail the test
 
+    def wait_for_toast(self, timeout=10, pre_wait=3, post_wait=2, screenshot_prefix="toast"):
+        """
+        Wait for toast message with optional pre/post waits and take screenshots.
+        Args:
+            timeout (int): Max time to wait for toast
+            pre_wait (int): Seconds to wait before toast appears
+            post_wait (int): Seconds to wait after toast appears
+            screenshot_prefix (str): prefix for screenshot file
+        Returns:
+            str: Toast text
+        """
+        # Wait before toast appears
+        print(f"⏳ Waiting {pre_wait}s before toast appears...")
+        time.sleep(pre_wait)
+        self.take_screenshot(f"{screenshot_prefix}_before.png")
+        # Wait for toast
+        print("⏳ Waiting for toast message...")
+        toast_element = WebDriverWait(self.driver, timeout).until(
+            EC.visibility_of_element_located(self.TOAST_CONTAINER)
+        )
+        self.take_screenshot(f"{screenshot_prefix}_appeared.png")
+        message = toast_element.text
+        print("📢 Toast message:", message)
+        # Wait after toast appears
+        print(f"⏳ Waiting {post_wait}s after toast...")
+        time.sleep(post_wait)
+        self.take_screenshot(f"{screenshot_prefix}_after.png")
+        return message
     def submit_upload(self):
         """Clicks the two confirmation buttons to finalize the upload."""
         self.log.action("Clicking 'Confirm' button on the initial upload form.")

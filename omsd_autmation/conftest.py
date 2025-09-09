@@ -20,13 +20,15 @@ def driver():
     headless = Config.get("headless", False)
 
     logger.info(f"🚀 Starting browser: {browser}, Headless: {headless}")
+    chromedriver_path = 'C:\\Users\\ferozebasha.s\\Downloads\\chromedriver-win64\\chromedriver-win64\\chromedriver.exe'
 
     if browser == "chrome":
         options = webdriver.ChromeOptions()
         if headless:
             options.add_argument("--headless=new")
         driver = webdriver.Chrome(
-            service=ChromeService(ChromeDriverManager().install()),
+            #service=ChromeService(ChromeDriverManager().install()),
+            service=ChromeService(executable_path=chromedriver_path),
             options=options,
         )
 
@@ -40,7 +42,8 @@ def driver():
         )
 
     elif browser == "edge":
-        options = webdriver.EdgeOptions()
+
+        options = webdriver.Edge()
         if headless:
             options.add_argument("--headless=new")
         driver = webdriver.Edge(

@@ -16,6 +16,7 @@ from omsd_autmation.utils.config_reader import Config
 
 
 class BasePage:
+    DEFAULT_TIMEOUT = 5
     def __init__(self, driver, timeout=None):
         self.driver = driver
         # prefer config implicit wait if available
@@ -25,6 +26,10 @@ class BasePage:
     def find(self, locator):
         """Find a single element."""
         return WebDriverWait(self.driver, self.timeout).until(EC.presence_of_element_located(locator))
+
+    def delay(self, seconds=None):
+        """Simple sleep delay."""
+        time.sleep(seconds or self.DEFAULT_TIMEOUT)
 
     def find_all(self, locator):
         """Find all elements matching the locator."""
@@ -120,6 +125,7 @@ class BasePage:
         WebDriverWait(self.driver, t).until(EC.invisibility_of_element_located(locator))
 
     def wait_for_title(self, title_text, timeout=None):
+        self.delay()
         """Wait for page title to contain specific text."""
         t = timeout or self.timeout
         return WebDriverWait(self.driver, t).until(EC.title_contains(title_text))
@@ -228,15 +234,21 @@ class BasePage:
         raise TimeoutException(f"File containing '{filename_substring}' not found in {download_dir} within {timeout}s")
 
     # --- Screenshots ---
-    def take_screenshot(self, name):
-        """Take screenshot and save to logs directory."""
-        logs_dir = Config.get("logs.dir", "reports")
-        if not os.path.exists(logs_dir):
-            os.makedirs(logs_dir)
-        path = os.path.join(logs_dir, name)
-        self.driver.save_screenshot(path)
-        return path
+    # def take_screenshot(self, name):
+    #     """Take screenshot and save to logs directory."""
+    #     logs_dir = Config.get("logs.dir", "reports")
+    #     if not os.path.exists(logs_dir):
+    #         os.makedirs(logs_dir)
+    #     path = os.path.join(logs_dir, name)
+    #     self.driver.save_screenshot(path)
+    #     return path
 
+    def take_screenshot(self, step_name):
+        folder = "screenshots"
+        os.makedirs(folder, exist_ok=True)
+        filename = os.path.join(folder, f"{step_name}.png")
+        self.driver.save_screenshot(filename)
+        print(f"Screenshot saved: {filename}")
     # --- Misc utility methods ---
     def get_title(self):
         """Get current page title."""

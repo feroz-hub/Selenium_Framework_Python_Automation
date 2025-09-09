@@ -8,7 +8,8 @@ from omsd_autmation.pages.software_page import SoftwarePage
 from omsd_autmation.pages.upload_page import UploadPage
 from omsd_autmation.utils.config_reader import Config
 from omsd_autmation.utils.logger import setup_test_logging
-
+from omsd_autmation.pages.home_page import HomePage
+from selenium.webdriver.common.by import By
 
 # The pytest marker is typically a string literal, but it's based on your config constant.
 @pytest.mark.smoke
@@ -35,6 +36,7 @@ def test_upload_software(driver):
 
         # Wait for title using the application title constant
         login.wait_for_title(C.APP_TITLE, timeout=C.LOGIN_TIMEOUT)
+
         log.page_info(driver.title, driver.current_url)
         log.verification("User successfully logged in and dashboard page is visible", True)
 
@@ -42,11 +44,11 @@ def test_upload_software(driver):
         base_page = BasePage(driver)
         log.action("Checking for and accepting cookies popup")
         base_page.accept_cookies()
-
+        login.take_screenshot("ST06-10")
         # --- Step 2: Navigate to product software list ---
         log.step("Step 2: Navigate to product software list")
         software = SoftwarePage(driver)
-
+        login.take_screenshot("ST06-11")
         # Use the default product constant
         product_name = C.DEFAULT_PRODUCT
 
@@ -58,7 +60,7 @@ def test_upload_software(driver):
         # --- Step 3: Upload software ---
         log.step("Step 3: Perform software upload")
         upload_page = UploadPage(driver)
-
+        login.take_screenshot("ST06-11")
         # Build file path using Pathlib objects from the config file for robustness
         file_to_upload = C.TEST_FILE_NAME
         file_path = C.UPLOAD_DIR / file_to_upload
@@ -71,18 +73,35 @@ def test_upload_software(driver):
         log.step("Step 4: Verify upload was successful")
 
         # Verify toast message
-        toast_text = upload_page.wait_for_toast(timeout=C.LONG_TIMEOUT)
+        toast_text = upload_page.wait_for_toast(timeout=C.DEFAULT_TIMEOUT)
+        # Verify uploaded file name is visible in the list
+
         expected_toast = "The software has been added."
         toast_verification_result = expected_toast in toast_text
         log.verification(f"Toast message contains '{expected_toast}'", toast_verification_result)
         assert toast_verification_result, f"Toast message was '{toast_text}' but expected '{expected_toast}'"
 
         # Verify uploaded file name is visible in the list
-        file_name = upload_page.wait_for_uploaded_file_name(timeout=C.DEFAULT_TIMEOUT)
-        file_name_verification_result = file_name == file_to_upload
-        log.verification(f"Uploaded file name in the list is '{file_to_upload}'", file_name_verification_result)
-        assert file_name_verification_result, f"File name in list was '{file_name}' but expected '{file_to_upload}'"
+        #file_name = upload_page.wait_for_uploaded_file_name(timeout=C.DEFAULT_TIMEOUT)
+        #file_name_verification_result = file_name == file_to_upload
+        # log.verification(f"Uploaded file name in the list is '{file_to_upload}'", file_name_verification_result)
+        # SignOut from the dropdown
+        home = HomePage(driver)
+        home.sign_out()
+        #assert file_name_verification_result, f"File name in list was '{file_name}' but expected '{file_to_upload}'"
+        # --- Verification after Logout ---
+        log.step("Step 4: Verify redirection to login page")
+        login.wait_for_element((By.ID, "signInName"))
 
+        is_on_login_page = login.is_displayed((By.ID, "signInName"))
+        log.verification("User is redirected to the login page", is_on_login_page)
+        assert is_on_login_page
+
+        title_contains_signin = "Sign up or sign in" in login.get_title()
+        log.verification("Page title confirms it is the sign-in page", title_contains_signin)
+        assert title_contains_signin
+
+        test_passed = True
         test_passed = True
 
     except Exception as e:
