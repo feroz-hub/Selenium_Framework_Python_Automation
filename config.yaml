@@ -32,3 +32,5 @@ tests:
     - username: "48200010.olympusssa.onmicrosoft.com@amer.teams.ms"
       password: "9xFXgZQR@kdgj"
       expected: "success"
+upload_files:
+  esg_410: "omsd_autmation/uploads/ESG-410_v01.00.00.00-New"
