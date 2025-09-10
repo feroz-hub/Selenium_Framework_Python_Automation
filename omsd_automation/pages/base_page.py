@@ -1,22 +1,24 @@
+import base64
 import os
 import time
-import base64
-from selenium.webdriver.support.ui import WebDriverWait, Select
+
 from selenium.common.exceptions import (
     TimeoutException,
-    StaleElementReferenceException,
     NoSuchElementException,
     ElementClickInterceptedException,
 )
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
-from omsd_autmation.tests import test_config as C   # Import your config
-from omsd_autmation.utils.config_reader import Config
+from selenium.webdriver.support.ui import WebDriverWait, Select
+
+from omsd_automation.tests import test_config as C  # Import your config
+from omsd_automation.utils.config_reader import Config
 
 
 class BasePage:
     DEFAULT_TIMEOUT = 5
+
     def __init__(self, driver, timeout=None):
         self.driver = driver
         # prefer config implicit wait if available
@@ -231,24 +233,15 @@ class BasePage:
             time.sleep(0.7)
         raise TimeoutException(f"File containing '{filename_substring}' not found in {download_dir} within {timeout}s")
 
-    # --- Screenshots ---
-    # def take_screenshot(self, name):
-    #     """Take screenshot and save to logs directory."""
-    #     logs_dir = Config.get("logs.dir", "reports")
-    #     if not os.path.exists(logs_dir):
-    #         os.makedirs(logs_dir)
-    #     path = os.path.join(logs_dir, name)
-    #     self.driver.save_screenshot(path)
-    #     return path
-
     def take_screenshot(self, step_name: str):
         """Takes a screenshot and saves it in the configured screenshots folder."""
-        #timestamp = time.strftime("%Y%m%d_%H%M%S")
+        # timestamp = time.strftime("%Y%m%d_%H%M%S")
         filename = f"{step_name}.png"
         filepath = C.SCREENSHOTS_DIR / filename
         self.driver.save_screenshot(str(filepath))
         print(f"📸 Screenshot saved: {filepath}")
         return filepath
+
     # --- Misc utility methods ---
     def get_title(self):
         """Get current page title."""
@@ -264,7 +257,6 @@ class BasePage:
         except (NoSuchElementException, TimeoutException):
             # no popup appeared, continue
             pass
-
 
     def switch_to_frame(self, locator: tuple, timeout: int = 10):
         """Waits for an iframe to be available and switches to it."""
@@ -472,7 +464,6 @@ class BasePage:
         Returns:
             bool: True if state reached within timeout, False otherwise
         """
-        from selenium.webdriver.support import expected_conditions as EC
         from selenium.webdriver.support.ui import WebDriverWait
 
         try:
@@ -519,4 +510,3 @@ class BasePage:
         return WebDriverWait(self.driver, timeout).until(
             EC.presence_of_element_located(locator)
         )
-

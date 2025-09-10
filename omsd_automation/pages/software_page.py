@@ -11,8 +11,8 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
 
-from omsd_autmation.pages.base_page import BasePage
-from omsd_autmation.utils.logger import get_logger, TestLogger
+from omsd_automation.pages.base_page import BasePage
+# from omsd_automation.utils.logger import get_logger, TestLogger
 
 
 class SoftwarePage(BasePage):
@@ -38,7 +38,7 @@ class SoftwarePage(BasePage):
     # Debug locators for troubleshooting
     ALL_PRODUCTS_LOCATOR = (By.XPATH, "//h5")
 
-    def __init__(self, driver: WebDriver) -> None:
+    def __init__(self, driver: WebDriver, logger) -> None:
         """
         Initialize SoftwarePage with enhanced logging.
         
@@ -46,7 +46,7 @@ class SoftwarePage(BasePage):
             driver: WebDriver instance for browser automation
         """
         super().__init__(driver)
-        self.logger = TestLogger(get_logger("software_page"))
+        self.logger = logger
 
     def open_software_list(self, product_name: str, timeout: int = 15) -> None:
         """

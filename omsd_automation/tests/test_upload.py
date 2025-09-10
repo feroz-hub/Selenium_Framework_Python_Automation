@@ -1,9 +1,9 @@
 import pytest
 
 # Import constants from the test configuration file using alias 'C' for brevity
-from omsd_autmation.tests import test_config as C
-from omsd_autmation.utils.config_reader import Config
-from omsd_autmation.utils.logger import setup_test_logging
+from omsd_automation.tests import test_config as C
+from omsd_automation.utils.config_reader import Config
+from omsd_automation.utils.logger import setup_test_logging
 from selenium.webdriver.common.by import By
 
 # The pytest marker is typically a string literal, but it's based on your config constant.

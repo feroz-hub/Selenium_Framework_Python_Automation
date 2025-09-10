@@ -8,18 +8,19 @@ from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
 from webdriver_manager.microsoft import EdgeChromiumDriverManager
 
+from .utils.browser_utils import get_download_prefs
 from .utils.config_reader import Config
 from .utils.logger import get_logger
-from omsd_autmation.tests import test_config as C   # import dirs (UPLOAD_DIR, DOWNLOAD_DIR)
-from omsd_autmation.utils.login_utils import LoginUtils
-from omsd_autmation.utils.logout_utils import LogoutUtils
+from omsd_automation.tests import test_config as C  # import dirs (UPLOAD_DIR, DOWNLOAD_DIR)
+from omsd_automation.utils.login_utils import LoginUtils
+from omsd_automation.utils.logout_utils import LogoutUtils
 # Import page objects
-from omsd_autmation.pages.base_page import BasePage
-from omsd_autmation.pages.login_page import LoginPage
-from omsd_autmation.pages.software_page import SoftwarePage
-from omsd_autmation.pages.upload_page import UploadPage
-from omsd_autmation.pages.home_page import HomePage
-from omsd_autmation.utils.logger import setup_test_logging
+from omsd_automation.pages.base_page import BasePage
+from omsd_automation.pages.login_page import LoginPage
+from omsd_automation.pages.software_page import SoftwarePage
+from omsd_automation.pages.upload_page import UploadPage
+from omsd_automation.pages.home_page import HomePage
+from omsd_automation.utils.logger import setup_test_logging
 
 logger = get_logger(__name__)
 
@@ -41,20 +42,19 @@ def driver():
         options = webdriver.ChromeOptions()
         if headless:
             options.add_argument("--headless=new")
-
-        # ✅ force downloads into project downloads folder
+            # ✅ force downloads into project downloads folder
         prefs = {
-            "download.default_directory": str(C.DOWNLOAD_DIR.resolve()),
-            "download.prompt_for_download": False,
-            "download.directory_upgrade": True,
-            "safebrowsing.enabled": True,
-        }
+                "download.default_directory": str(C.DOWNLOAD_DIR.resolve()),
+                "download.prompt_for_download": False,
+                "download.directory_upgrade": True,
+                "safebrowsing.enabled": True,
+            }
         options.add_experimental_option("prefs", prefs)
 
         if system_os == "darwin":
             service = ChromeService(ChromeDriverManager().install())
         else:
-            chromedriver_path = 'C:\\Users\\ferozebasha.s\\Downloads\\chromedriver-win64\\chromedriver-win64\\chromedriver.exe'
+            chromedriver_path = Config.get("chrome_driver_path", None)
 
             service = ChromeService(executable_path=chromedriver_path)
 
@@ -129,23 +129,29 @@ def driver():
 def base_page(driver):
     return BasePage(driver)
 
+
 @pytest.fixture
 def login_page(driver):
     return LoginPage(driver)
 
+
 @pytest.fixture
 def software_page(driver):
-    return SoftwarePage(driver)
+    return SoftwarePage(driver, setup_test_logging("software_page"))
+
 
 @pytest.fixture
 def upload_page(driver):
-    return UploadPage(driver)
+    return UploadPage(driver, setup_test_logging("upload_page"))
+
 
 @pytest.fixture
 def home_page(driver):
     return HomePage(driver)
-@pytest.fixture
-def login_session(driver):
+
+
+@pytest.fixture(scope="function")
+def authenticated_session(driver):
     """
     Pytest fixture to handle login before a test and logout after the test.
 
@@ -162,7 +168,6 @@ def login_session(driver):
     base_page = BasePage(driver)
     home_page = HomePage(driver)
     LoginUtils.login_as_software_uploader(login_page, base_page, log, driver)
-    yield
+    yield home_page
     # Logout after test
     LogoutUtils.sign_out_user(home_page, base_page, login_page, log, driver)
-

@@ -1,8 +1,8 @@
 import pytest
 from selenium.webdriver.common.by import By
-from omsd_autmation.tests import test_config as C
-from omsd_autmation.utils.config_reader import Config
-from omsd_autmation.utils.logger import setup_test_logging
+from omsd_automation.tests import test_config as C
+from omsd_automation.utils.config_reader import Config
+from omsd_automation.utils.logger import setup_test_logging
 
 
 @pytest.mark.smoke
@@ -41,35 +41,38 @@ def test_delete_software(driver, base_page, login_page, software_page, home_page
             f"//a[@class='packageNameTitle' and normalize-space(text())='{file_to_delete}']"
         )
 
-        file_element = base_page.wait_for_element_to_be_clickable(file_link_locator, timeout=10)
-        file_element.click()
-        base_page.take_screenshot("ST07-03_SelectedSoftware")
-        log.verification(f"Selected software '{file_to_delete}'", True)
+        try:
+            file_element = base_page.wait_for_element_to_be_clickable(file_link_locator, timeout=10)
+            file_element.click()
+            base_page.take_screenshot("ST07-03_SelectedSoftware")
+            log.verification(f"Selected software '{file_to_delete}'", True)
+        except Exception as e:
+            log.error(f"❌ Could not find or click uploaded software link: {file_to_delete}")
+            base_page.take_screenshot("ST07-03_Error")
+            raise e
 
         # Step 4: Delete the Software
         log.step("Step 4: Delete the software")
-        delete_btn = base_page.wait_for_element_to_be_clickable((By.ID, "btnDelete"), timeout=5)
-        delete_btn.click()
+        driver.find_element(By.ID, "btnDelete").click()
         log.action("Clicked 'Delete this software'")
-
-        delete_ok_btn = base_page.wait_for_element_to_be_clickable((By.ID, "btnDeleteOK"), timeout=5)
-        delete_ok_btn.click()
+        driver.find_element(By.ID, "btnDeleteOK").click()
         log.action("Confirmed delete action")
 
-        # Step 5: Verify Deletion via Toast Message
         toast_locator = (By.CSS_SELECTOR, "#toast-container .toast")
         toast_text = base_page.wait_for_element(toast_locator, timeout=20).text
         log.verification("Toast message confirms deletion", "deleted" in toast_text.lower())
         base_page.take_screenshot("ST07-04_Deleted")
 
-        # Step 6: Verify Software is Removed from List
-        log.step("Step 6: Verify the software no longer appears in the list")
+        # Step 5: Verify the Software is Removed
+        log.step("Step 5: Verify the software no longer appears in the list")
+        # Refresh the page to ensure updated DOM
         driver.refresh()
-        #base_page.wait_for_seconds(1)
+        base_page.wait_for_seconds(1)
+
         try:
             software_page.open_software_list(C.OMSD_ESG_410)
-        except Exception:
-            log.warning(f"Product '{C.OMSD_ESG_410}' not found after refresh.")
+        except Exception as e:
+            log.warning(f"Product '{C.OMSD_ESG_410}' not found after refresh. Skipping re-navigation.")
 
         remaining_files = driver.find_elements(
             By.XPATH,
@@ -80,8 +83,8 @@ def test_delete_software(driver, base_page, login_page, software_page, home_page
         log.verification(f"Software '{file_to_delete}' deleted successfully", is_deleted)
         assert is_deleted, f"File '{file_to_delete}' still found in software list"
 
-        # Step 7: Sign Out
-        log.step("Step 7: Sign out")
+        # Step 6: Sign Out
+        log.step("Step 6: Sign out")
         home_page.sign_out()
         base_page.wait_for_seconds(2)
         login_page.wait_for_element((By.ID, "signInName"))

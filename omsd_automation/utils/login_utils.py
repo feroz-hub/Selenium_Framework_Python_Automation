@@ -1,5 +1,7 @@
-from omsd_autmation.utils.config_reader import Config
-from omsd_autmation.tests import test_config as C
+from omsd_automation.utils.config_reader import Config
+from omsd_automation.tests import test_config as C
+
+
 class LoginUtils:
     @staticmethod
     def login_as_software_uploader(login_page, base_page, log, driver):

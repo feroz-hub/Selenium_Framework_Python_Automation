@@ -1,28 +1,22 @@
 import pytest
 from selenium.webdriver.common.by import By
-from omsd_autmation.tests import test_config as C
-from omsd_autmation.utils.config_reader import Config
-from omsd_autmation.utils.logger import setup_test_logging
+
+from omsd_automation.pages.home_page import HomePage
+from omsd_automation.tests import test_config as C
+from omsd_automation.utils.logger import setup_test_logging
 
 
 @pytest.mark.smoke
-def test_delete_software(driver, base_page, login_page, software_page, home_page):
+def test_delete_software(authenticated_session, driver, base_page, login_page, software_page, home_page):
     log = setup_test_logging("delete_software")
     log.test_start("test_delete_software")
+    log.step("Navigate to software deletion test")
+    log.action(f"Test file to delete: {C.TEST_FILE_NAME}")
     test_passed = False
 
     try:
         # Step 1: Login
-        log.step("Step 1: Login to the application")
-        username = Config.get(f"environments.staging.users.{C.SOFTWARE_UPLOADER_ROLE}.username")
-        password = Config.get(f"environments.staging.users.{C.SOFTWARE_UPLOADER_ROLE}.password")
-
-        login_page.login(username, password)
-        login_page.wait_for_title(C.APP_TITLE, timeout=C.LOGIN_TIMEOUT)
-        log.page_info(driver.title, driver.current_url)
-        log.verification("User successfully logged in", True)
-        base_page.accept_cookies()
-        base_page.take_screenshot("ST07-01_Login")
+        # assumed done in authenticated_session fixture
 
         # Step 2: Navigate to Product Software List
         log.step("Step 2: Navigate to the product software list")
@@ -41,38 +35,34 @@ def test_delete_software(driver, base_page, login_page, software_page, home_page
             f"//a[@class='packageNameTitle' and normalize-space(text())='{file_to_delete}']"
         )
 
-        try:
-            file_element = base_page.wait_for_element_to_be_clickable(file_link_locator, timeout=10)
-            file_element.click()
-            base_page.take_screenshot("ST07-03_SelectedSoftware")
-            log.verification(f"Selected software '{file_to_delete}'", True)
-        except Exception as e:
-            log.error(f"❌ Could not find or click uploaded software link: {file_to_delete}")
-            base_page.take_screenshot("ST07-03_Error")
-            raise e
+        file_element = base_page.wait_for_element_to_be_clickable(file_link_locator, timeout=10)
+        file_element.click()
+        base_page.take_screenshot("ST07-03_SelectedSoftware")
+        log.verification(f"Selected software '{file_to_delete}'", True)
 
         # Step 4: Delete the Software
         log.step("Step 4: Delete the software")
-        driver.find_element(By.ID, "btnDelete").click()
+        delete_btn = base_page.wait_for_element_to_be_clickable((By.ID, "btnDelete"), timeout=5)
+        delete_btn.click()
         log.action("Clicked 'Delete this software'")
-        driver.find_element(By.ID, "btnDeleteOK").click()
+
+        delete_ok_btn = base_page.wait_for_element_to_be_clickable((By.ID, "btnDeleteOK"), timeout=5)
+        delete_ok_btn.click()
         log.action("Confirmed delete action")
 
+        # Step 5: Verify Deletion via Toast Message
         toast_locator = (By.CSS_SELECTOR, "#toast-container .toast")
         toast_text = base_page.wait_for_element(toast_locator, timeout=20).text
         log.verification("Toast message confirms deletion", "deleted" in toast_text.lower())
         base_page.take_screenshot("ST07-04_Deleted")
 
-        # Step 5: Verify the Software is Removed
-        log.step("Step 5: Verify the software no longer appears in the list")
-        # Refresh the page to ensure updated DOM
+        # Step 6: Verify Software is Removed from List
+        log.step("Step 6: Verify the software no longer appears in the list")
         driver.refresh()
-        base_page.wait_for_seconds(1)
-
         try:
             software_page.open_software_list(C.OMSD_ESG_410)
-        except Exception as e:
-            log.warning(f"Product '{C.OMSD_ESG_410}' not found after refresh. Skipping re-navigation.")
+        except Exception:
+            log.warning(f"Product '{C.OMSD_ESG_410}' not found after refresh.")
 
         remaining_files = driver.find_elements(
             By.XPATH,
@@ -83,14 +73,8 @@ def test_delete_software(driver, base_page, login_page, software_page, home_page
         log.verification(f"Software '{file_to_delete}' deleted successfully", is_deleted)
         assert is_deleted, f"File '{file_to_delete}' still found in software list"
 
-        # Step 6: Sign Out
-        log.step("Step 6: Sign out")
-        home_page.sign_out()
-        base_page.wait_for_seconds(2)
-        login_page.wait_for_element((By.ID, "signInName"))
-        is_on_login_page = base_page.is_visible((By.ID, "signInName"))
-        log.verification("User is redirected to login page after sign out", is_on_login_page)
-        assert is_on_login_page
+        # Step 7: Sign Out
+        # assumed done in authenticated_session fixture
 
         test_passed = True
 

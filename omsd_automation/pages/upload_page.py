@@ -4,35 +4,39 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 
-from omsd_autmation.pages.base_page import BasePage
+from omsd_automation.pages.base_page import BasePage
 # Import the class-level logger utility
-from omsd_autmation.utils.logger import get_class_logger
+from omsd_automation.utils.logger import setup_test_logging
 import time
 import os
+
+
 class UploadPage(BasePage):
     """Page object for Upload Software popup."""
 
     # --- LOCATORS ---
     UPLOAD_SOFTWARE_BTN = (By.XPATH, "//input[@value='Upload Software']")
     FILE_INPUT = (By.ID, "packageFileInput")
-    PACKAGE_TYPE_RADIO = (By.XPATH,"//input[@name='groupPackageType' and following-sibling::span[contains(text(), 'Device Update Executers')]]")
+    PACKAGE_TYPE_RADIO = (By.XPATH,
+                          "//input[@name='groupPackageType' and following-sibling::span[contains(text(), 'Device Update Executers')]]")
     ON_TOGGLE = (By.XPATH, "//input[@name='groupUseConfirmationCodeType' and following-sibling::span[text()='On']]")
-    BY_COUNTRIES_TAB = (By.XPATH,"//input[@name='groupPublishType' and following-sibling::span[text()='by countries']]")
+    BY_COUNTRIES_TAB = (
+    By.XPATH, "//input[@name='groupPublishType' and following-sibling::span[text()='by countries']]")
     MATERIAL_ID_CHECKBOX = (By.XPATH, "//label[contains(., 'All material IDs below')]//span")
     REGION_CHECKBOX = (By.XPATH, "//div[@id='regions']//label[contains(., 'OMSI')]/span[@class='checkbox-icon']")
     DO_NOT_DISPLAY_RADIO = (By.XPATH, "//input[@name='groupIsEnabled' and @value='false']")
     DISPLAY_RADIO = (By.XPATH, "//input[@name='groupIsEnabled' and @value='true']")
     ADD_CONFIRM_BTN = (By.ID, "btnAddConfirm")
     EDIT_CONFIRM_BTN = (By.ID, "btnEditConfirm")
-    SAVE_CONFIRM_BTN= (By.ID, "btnEditSave")
+    SAVE_CONFIRM_BTN = (By.ID, "btnEditSave")
     UPLOAD_CONFIRM_BTN = (By.ID, "btnAddSave")
     TOAST_CONTAINER = (By.CSS_SELECTOR, "#toast-container .toast")
     UPLOADED_FILE_NAME = (By.CSS_SELECTOR, "#toast-container .toast font[size='3']")
 
-    def __init__(self, driver: WebDriver):
+    def __init__(self, driver: WebDriver, logger):
         super().__init__(driver)
-        # Initialize a logger specific to this page object
-        self.log = get_class_logger(self.__class__.__name__)
+        # # Initialize a logger specific to this page object
+        self.log = logger
 
     def open_upload_popup(self):
         """Clicks the button to open the upload software modal."""
@@ -138,6 +142,7 @@ class UploadPage(BasePage):
         time.sleep(post_wait)
         # self.take_screenshot(f"{screenshot_prefix}_after.png")
         return message
+
     def submit_upload(self):
         """Clicks the two confirmation buttons to finalize the upload."""
         self.log.action("Clicking 'Confirm' button on the initial upload form.")
@@ -154,8 +159,6 @@ class UploadPage(BasePage):
         self.upload_file(file_path)
         self.fill_upload_details()
         self.submit_upload()
-
-
 
     def wait_for_uploaded_file_name(self, expected_name, timeout=30, poll_frequency=0.5):
         """

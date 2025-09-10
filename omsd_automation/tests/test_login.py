@@ -1,8 +1,8 @@
 import pytest
 from selenium.webdriver.common.by import By
 
-from omsd_autmation.utils.config_reader import Config
-from omsd_autmation.utils.logger import setup_test_logging
+from omsd_automation.utils.config_reader import Config
+from omsd_automation.utils.logger import setup_test_logging
 
 
 @pytest.mark.parametrize("case", Config.get("tests.login"))

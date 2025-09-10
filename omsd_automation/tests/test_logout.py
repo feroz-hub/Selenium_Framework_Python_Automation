@@ -2,11 +2,11 @@ import pytest
 from selenium.webdriver.common.by import By
 
 
-from omsd_autmation.pages.home_page import HomePage
-from omsd_autmation.utils.data_loader import load_csv
-from omsd_autmation.utils.screenshot import take_screenshot
-from omsd_autmation.utils.logger import setup_test_logging
-from omsd_autmation.tests import test_config as C
+from omsd_automation.pages.home_page import HomePage
+from omsd_automation.utils.data_loader import load_csv
+from omsd_automation.utils.screenshot import take_screenshot
+from omsd_automation.utils.logger import setup_test_logging
+from omsd_automation.tests import test_config as C
 
 
 @pytest.mark.parametrize("username,password,expected", load_csv("data/login_test_data.csv"))

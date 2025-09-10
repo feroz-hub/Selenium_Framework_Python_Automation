@@ -447,7 +447,6 @@ reports/
 # Logs & temp
 logs/
 *.log
-
-omsd_autmation/screenshots/
+screenshots/
 
 downloads/
