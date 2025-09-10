@@ -52,7 +52,8 @@ def driver():
         if system_os == "darwin":
             service = ChromeService(ChromeDriverManager().install())
         else:
-            chromedriver_path = r"C:\Users\ferozebasha.s\Downloads\chromedriver-win64\chromedriver.exe"
+            chromedriver_path = 'C:\\Users\\ferozebasha.s\\Downloads\\chromedriver-win64\\chromedriver-win64\\chromedriver.exe'
+
             service = ChromeService(executable_path=chromedriver_path)
 
         driver = webdriver.Chrome(service=service, options=options)

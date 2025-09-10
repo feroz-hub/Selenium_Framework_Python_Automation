@@ -12,6 +12,7 @@ def test_upload_software(driver, base_page, login_page,software_page,upload_page
     # --- Logger Setup ---
     log = setup_test_logging("upload_software")
     log.test_start("test_upload_software")
+
     test_passed = False
 
     try:
@@ -39,9 +40,9 @@ def test_upload_software(driver, base_page, login_page,software_page,upload_page
         base_page.take_screenshot("ST06-10")
         # --- Step 2: Navigate to product software list ---
         log.step("Step 2: Navigate to product software list")
-        log.action(f"Opening software list for product: '{C.DEFAULT_PRODUCT}'")
-        software_page.open_software_list(C.DEFAULT_PRODUCT)
-        log.verification(f"Successfully navigated to the software list for '{C.DEFAULT_PRODUCT}'", True)
+        log.action(f"Opening software list for product: '{C.OMSD_ESG_410}'")
+        software_page.open_software_list(C.OMSD_ESG_410)
+        log.verification(f"Successfully navigated to the software list for '{C.OMSD_ESG_410}'", True)
         log.page_info(driver.title, driver.current_url)
 
         # --- Step 3: Upload software ---

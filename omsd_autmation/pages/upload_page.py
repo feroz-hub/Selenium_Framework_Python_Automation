@@ -15,23 +15,16 @@ class UploadPage(BasePage):
     # --- LOCATORS ---
     UPLOAD_SOFTWARE_BTN = (By.XPATH, "//input[@value='Upload Software']")
     FILE_INPUT = (By.ID, "packageFileInput")
-    PACKAGE_TYPE_RADIO = (
-        By.XPATH,
-        "//input[@name='groupPackageType' and following-sibling::span[contains(text(), 'Device Update Executers')]]"
-    )
+    PACKAGE_TYPE_RADIO = (By.XPATH,"//input[@name='groupPackageType' and following-sibling::span[contains(text(), 'Device Update Executers')]]")
     ON_TOGGLE = (By.XPATH, "//input[@name='groupUseConfirmationCodeType' and following-sibling::span[text()='On']]")
-    BY_COUNTRIES_TAB = (
-        By.XPATH,
-        "//input[@name='groupPublishType' and following-sibling::span[text()='by countries']]"
-    )
-    MATERIAL_ID_CHECKBOX = (
-        By.XPATH, "//label[contains(., 'All material IDs below')]//span"
-    )
-    REGION_CHECKBOX = (
-        By.XPATH, "//div[@id='regions']//label[contains(., 'OMSI')]/span[@class='checkbox-icon']"
-    )
-    DISPLAY_RADIO = (By.XPATH, "//input[@name='groupIsEnabled' and @value='false']")
-    CONFIRM_BTN = (By.ID, "btnAddConfirm")
+    BY_COUNTRIES_TAB = (By.XPATH,"//input[@name='groupPublishType' and following-sibling::span[text()='by countries']]")
+    MATERIAL_ID_CHECKBOX = (By.XPATH, "//label[contains(., 'All material IDs below')]//span")
+    REGION_CHECKBOX = (By.XPATH, "//div[@id='regions']//label[contains(., 'OMSI')]/span[@class='checkbox-icon']")
+    DO_NOT_DISPLAY_RADIO = (By.XPATH, "//input[@name='groupIsEnabled' and @value='false']")
+    DISPLAY_RADIO = (By.XPATH, "//input[@name='groupIsEnabled' and @value='true']")
+    ADD_CONFIRM_BTN = (By.ID, "btnAddConfirm")
+    EDIT_CONFIRM_BTN = (By.ID, "btnEditConfirm")
+    SAVE_CONFIRM_BTN= (By.ID, "btnEditSave")
     UPLOAD_CONFIRM_BTN = (By.ID, "btnAddSave")
     TOAST_CONTAINER = (By.CSS_SELECTOR, "#toast-container .toast")
     UPLOADED_FILE_NAME = (By.CSS_SELECTOR, "#toast-container .toast font[size='3']")
@@ -77,7 +70,7 @@ class UploadPage(BasePage):
         self.click(self.REGION_CHECKBOX)
 
         self.log.action("Setting display status radio button.")
-        self.click(self.DISPLAY_RADIO)
+        self.click(self.DO_NOT_DISPLAY_RADIO)
 
     def wait_for_uploaded_file_name(self, timeout=20):
         """Waits for the toast message and extracts the uploaded file name from it."""
@@ -106,6 +99,16 @@ class UploadPage(BasePage):
     #     except TimeoutException:
     #         self.log.wait_timeout("Toast message did not appear.", timeout)
     #         raise  # Re-raise exception to fail the test
+
+    def update_bc_setting(self, timeout=10):
+        self.log.action("Setting display status radio button.")
+        self.click(self.DISPLAY_RADIO)
+        self.log.action("Clicking 'Confirm' button on the initial upload form.")
+        self.click(self.EDIT_CONFIRM_BTN)
+        self.log.wait_start("Waiting for the final 'Save' confirmation button to be clickable.", timeout)
+        self.wait_for_element_to_be_clickable(self.SAVE_CONFIRM_BTN)
+        self.log.action("Clicking the final 'Update' confirmation button.")
+        self.click(self.SAVE_CONFIRM_BTN)
 
     def wait_for_toast(self, timeout=10, pre_wait=3, post_wait=2, screenshot_prefix="toast"):
         """
@@ -138,7 +141,7 @@ class UploadPage(BasePage):
     def submit_upload(self):
         """Clicks the two confirmation buttons to finalize the upload."""
         self.log.action("Clicking 'Confirm' button on the initial upload form.")
-        self.click(self.CONFIRM_BTN)
+        self.click(self.ADD_CONFIRM_BTN)
         self.log.wait_start("Waiting for the final 'Upload' confirmation button to be clickable.", 10)
         self.wait_for_element_to_be_clickable(self.UPLOAD_CONFIRM_BTN)
         self.log.action("Clicking the final 'Upload' confirmation button.")

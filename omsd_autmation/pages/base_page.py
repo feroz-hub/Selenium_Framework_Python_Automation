@@ -243,8 +243,8 @@ class BasePage:
 
     def take_screenshot(self, step_name: str):
         """Takes a screenshot and saves it in the configured screenshots folder."""
-        timestamp = time.strftime("%Y%m%d_%H%M%S")
-        filename = f"{step_name}_{timestamp}.png"
+        #timestamp = time.strftime("%Y%m%d_%H%M%S")
+        filename = f"{step_name}.png"
         filepath = C.SCREENSHOTS_DIR / filename
         self.driver.save_screenshot(str(filepath))
         print(f"📸 Screenshot saved: {filepath}")

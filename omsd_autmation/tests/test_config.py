@@ -16,7 +16,8 @@ SCREENSHOTS_DIR = TEST_BASE_DIR / "screenshots"
 LOGS_DIR = TEST_BASE_DIR / "logs"
 
 # Product configuration
-DEFAULT_PRODUCT = "ESG-410"
+OMSD_ESG_410 = "ESG-410"
+OMSD_USG_410= "USG-410"
 TEST_PRODUCTS: List[str] = ["ESG-410", "ESG-420"]
 
 # Test file configuration

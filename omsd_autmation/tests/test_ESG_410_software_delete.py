@@ -26,7 +26,7 @@ def test_delete_software(driver, base_page, login_page, software_page, home_page
 
         # Step 2: Navigate to Product Software List
         log.step("Step 2: Navigate to the product software list")
-        software_page.open_software_list(C.DEFAULT_PRODUCT)
+        software_page.open_software_list(C.OMSD_ESG_410)
         base_page.wait_for_seconds(2)
         log.page_info(driver.title, driver.current_url)
         base_page.take_screenshot("ST07-02_SoftwareList")
@@ -67,9 +67,9 @@ def test_delete_software(driver, base_page, login_page, software_page, home_page
         driver.refresh()
         base_page.wait_for_seconds(1)
         try:
-            software_page.open_software_list(C.DEFAULT_PRODUCT)
+            software_page.open_software_list(C.OMSD_ESG_410)
         except Exception:
-            log.warning(f"Product '{C.DEFAULT_PRODUCT}' not found after refresh.")
+            log.warning(f"Product '{C.OMSD_ESG_410}' not found after refresh.")
 
         remaining_files = driver.find_elements(
             By.XPATH,

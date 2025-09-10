@@ -35,7 +35,7 @@ def test_upload_software(driver, base_page, login_page, software_page, upload_pa
 
         # --- Step 2: Navigate to product software list ---
         log.step("Step 2: Navigate to product software list")
-        software_page.open_software_list(C.DEFAULT_PRODUCT)
+        software_page.open_software_list(C.OMSD_ESG_410)
         base_page.wait_for_seconds(3)
         base_page.take_screenshot("ST06-11")  # [SC012] Package List
 
