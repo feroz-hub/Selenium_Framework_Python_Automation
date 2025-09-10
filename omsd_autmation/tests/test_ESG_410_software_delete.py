@@ -65,7 +65,7 @@ def test_delete_software(driver, base_page, login_page, software_page, home_page
         # Step 6: Verify Software is Removed from List
         log.step("Step 6: Verify the software no longer appears in the list")
         driver.refresh()
-        base_page.wait_for_seconds(1)
+        #base_page.wait_for_seconds(1)
         try:
             software_page.open_software_list(C.OMSD_ESG_410)
         except Exception:

@@ -3,13 +3,13 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+
 # ----------------------
 # Helper: fallback name search with multiple xpaths and diagnostics
 
-
 # ----------------------
 
-def _fallback_find_uploaded_name(driver, expected_name, timeout=60, poll_interval=1.0, log=None):
+def fallback_find_uploaded_name(driver, expected_name, timeout=60, poll_interval=1.0, log=None):
     """
     Tries multiple XPath strategies to find an element that contains the expected_name.
     Returns the element text if found, otherwise raises TimeoutException after saving diagnostics.

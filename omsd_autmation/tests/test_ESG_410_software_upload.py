@@ -7,12 +7,11 @@ from selenium.common.exceptions import TimeoutException, NoSuchElementException
 
 # Import constants from the test configuration file using alias 'C' for brevity
 from omsd_autmation.tests import test_config as C
-from omsd_autmation.utils.config_reader import Config
 from omsd_autmation.utils.logger import setup_test_logging
 from selenium.webdriver.support.ui import WebDriverWait
 from omsd_autmation.utils.login_utils import LoginUtils
 from selenium.webdriver.support import expected_conditions as EC
-from omsd_autmation.utils.element_helper import _fallback_find_uploaded_name
+from omsd_autmation.utils.element_helper import fallback_find_uploaded_name
 
 
 @pytest.mark.smoke
@@ -31,25 +30,6 @@ def test_upload_software(driver, base_page, login_page, software_page, upload_pa
 
     try:
         # --- Step 1: Login ---
-        # log.step("Step 1: Login to the application")
-        #
-        # username_path = f"environments.staging.users.{C.SOFTWARE_UPLOADER_ROLE}.username"
-        # password_path = f"environments.staging.users.{C.SOFTWARE_UPLOADER_ROLE}.password"
-        # username = Config.get(username_path)
-        # password = Config.get(password_path)
-        #
-        # log.action(f"Attempting to log in with user role: {C.SOFTWARE_UPLOADER_ROLE}")
-        # login_page.login(username, password)
-        #
-        # login_page.wait_for_title(C.APP_TITLE, timeout=C.LOGIN_TIMEOUT)
-        #
-        # log.page_info(driver.title, driver.current_url)
-        # log.verification("User successfully logged in and dashboard page is visible", True)
-        # log.action("Checking for and accepting cookies popup")
-        #
-        # base_page.accept_cookies()
-        # base_page.wait_for_seconds(2)
-        # base_page.take_screenshot("ST06-10")
         LoginUtils.login_as_software_uploader(login_page, base_page, log, driver)
 
         # --- Step 2: Navigate to product software list ---
@@ -61,7 +41,6 @@ def test_upload_software(driver, base_page, login_page, software_page, upload_pa
 
         # --- Step 3: Upload software ---
         log.step("Step 3: Perform software upload")
-
         base_page.wait_for_seconds(3)
         base_page.take_screenshot("ST06-11")
 
@@ -117,7 +96,7 @@ def test_upload_software(driver, base_page, login_page, software_page, upload_pa
         except TimeoutException:
             # fallback search using driver + multiple xpaths
             log.warning("Primary wait_for_uploaded_file_name timed out; trying fallback search.")
-            found_file_text = _fallback_find_uploaded_name(driver, file_to_upload, timeout=list_timeout, log=log)
+            found_file_text = fallback_find_uploaded_name(driver, file_to_upload, timeout=list_timeout, log=log)
 
         # Normalize and verify file name (allow contains match)
         if found_file_text:
@@ -255,67 +234,8 @@ def test_upload_software(driver, base_page, login_page, software_page, upload_pa
         log.test_end("test_upload_software", success=test_passed)
 
 
-# ----------------------
-# Helper: fallback name search with multiple xpaths and diagnostics
-# ----------------------
-def _fallback_find_uploaded_name(driver, expected_name, timeout=60, poll_interval=1.0, log=None):
-    """
-    Tries multiple XPath strategies to find an element that contains the expected_name.
-    Returns the element text if found, otherwise raises TimeoutException after saving diagnostics.
-    """
-    end = time.time() + timeout
-    escaped = expected_name.replace("'", "\\'")
-
-    xpaths = [
-        # exact cell match
-        f"//table//td[normalize-space(text()) = '{escaped}']",
-        # contains in table cell or anchor
-        f"//table//td[contains(normalize-space(.), '{escaped}')]",
-        f"//tr//a[contains(normalize-space(.), '{escaped}')]",
-        # common package-list container
-        f"//div[contains(@class,'package-list')]//span[contains(normalize-space(.), '{escaped}')]",
-        f"//div[contains(@class,'package-list')]//div[contains(., '{escaped}')]",
-        # toast fallback
-        f"//div[contains(@class,'toast') and contains(., '{escaped}')]",
-        # global fallback: any visible element that contains the text
-        f"//*[contains(normalize-space(.), '{escaped}')]"
-    ]
-
-    while time.time() < end:
-        # optionally wait briefly for spinners to disappear
-        try:
-            WebDriverWait(driver, 2).until(EC.invisibility_of_element_located((By.CSS_SELECTOR, ".loading-spinner, .overlay")))
-        except Exception:
-            pass
-
-        for xp in xpaths:
-            try:
-                elem = driver.find_element(By.XPATH, xp)
-                if elem and elem.is_displayed():
-                    text = elem.text.strip()
-                    if text:
-                        if log:
-                            log.debug(f"Found element by xpath '{xp}': '{text[:120]}'")
-                        return text
-            except Exception:
-                continue
-
-        time.sleep(poll_interval)
-
-    # Save diagnostics before raising
-    ts = int(time.time())
-    try:
-        driver.save_screenshot(f"fallback_search_timeout_{ts}.png")
-        with open(f"fallback_search_timeout_{ts}.html", "w", encoding="utf-8") as fh:
-            fh.write(driver.page_source)
-    except Exception:
-        pass
-
-    raise TimeoutException(f"Timeout while searching for uploaded file name '{expected_name}'. "
-                           f"Diagnostics saved to current directory.")
-
-
-def test_public_bc_setting(driver, base_page, login_page, software_page, upload_page, home_page):
+@pytest.mark.software_upload
+def test_public_bc_setting(login_session, driver, base_page, login_page, software_page, upload_page, home_page):
     """
     Test to verify the 'Public BC' setting during software upload.
     Steps:
@@ -332,7 +252,7 @@ def test_public_bc_setting(driver, base_page, login_page, software_page, upload_
 
     try:
         # --- Step 1: Login ---
-        LoginUtils.login_as_software_uploader(login_page, base_page, log, driver)
+        # login_session is a pytest fixture that logs in once per module
 
         # --- Step 2: Navigate to product software list ---
         log.step("Step 2: Navigate to product software list")
@@ -351,7 +271,6 @@ def test_public_bc_setting(driver, base_page, login_page, software_page, upload_
             By.XPATH,
             f"//a[@class='packageNameTitle' and normalize-space(text())='{file_to_update}']"
         )
-
         file_element = base_page.wait_for_element_to_be_clickable(file_link_locator, timeout=10)
         file_element.click()
         base_page.take_screenshot("ST07-03_SelectedSoftware")
@@ -362,21 +281,14 @@ def test_public_bc_setting(driver, base_page, login_page, software_page, upload_
         upload_page.update_bc_setting()
         base_page.wait_for_seconds(2)
 
-
-        # --- Step 4: Verify upload was successful (toast + list) ---
         # Step 5: Verify Update via Toast Message
         toast_locator = (By.CSS_SELECTOR, "#toast-container .toast")
         toast_text = base_page.wait_for_element(toast_locator, timeout=10).text
         log.verification("Toast message confirms saved", "save" in toast_text.lower())
         base_page.take_screenshot("ST07-04_Deleted")
-        # Step 7: Sign Out
-        log.step("Step 7: Sign out")
-        home_page.sign_out()
-        base_page.wait_for_seconds(2)
-        login_page.wait_for_element((By.ID, "signInName"))
-        is_on_login_page = base_page.is_visible((By.ID, "signInName"))
-        log.verification("User is redirected to login page after sign out", is_on_login_page)
-        assert is_on_login_page
+
+        # # Step 7: Sign Out
+        # SignOut is happened in pytest fixture
 
         test_passed = True
 
@@ -386,4 +298,4 @@ def test_public_bc_setting(driver, base_page, login_page, software_page, upload_
         raise
 
     finally:
-        log.test_end("test_delete_software", success=test_passed)
+        log.test_end("bc_setting_updated", success=test_passed)

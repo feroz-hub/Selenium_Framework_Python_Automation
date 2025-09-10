@@ -11,13 +11,15 @@ from webdriver_manager.microsoft import EdgeChromiumDriverManager
 from .utils.config_reader import Config
 from .utils.logger import get_logger
 from omsd_autmation.tests import test_config as C   # import dirs (UPLOAD_DIR, DOWNLOAD_DIR)
-
+from omsd_autmation.utils.login_utils import LoginUtils
+from omsd_autmation.utils.logout_utils import LogoutUtils
 # Import page objects
 from omsd_autmation.pages.base_page import BasePage
 from omsd_autmation.pages.login_page import LoginPage
 from omsd_autmation.pages.software_page import SoftwarePage
 from omsd_autmation.pages.upload_page import UploadPage
 from omsd_autmation.pages.home_page import HomePage
+from omsd_autmation.utils.logger import setup_test_logging
 
 logger = get_logger(__name__)
 
@@ -142,3 +144,25 @@ def upload_page(driver):
 @pytest.fixture
 def home_page(driver):
     return HomePage(driver)
+@pytest.fixture
+def login_session(driver):
+    """
+    Pytest fixture to handle login before a test and logout after the test.
+
+    Parameters:
+    - driver: WebDriver instance
+    - login_page: Page object for login operations
+    - base_page: Page object for base operations
+    - home_page: Page object for home page operations
+    - log: Logger object
+    """
+    # Login before test
+    log = setup_test_logging("login_session")
+    login_page = LoginPage(driver)
+    base_page = BasePage(driver)
+    home_page = HomePage(driver)
+    LoginUtils.login_as_software_uploader(login_page, base_page, log, driver)
+    yield
+    # Logout after test
+    LogoutUtils.sign_out_user(home_page, base_page, login_page, log, driver)
+
