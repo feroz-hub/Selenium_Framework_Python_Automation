@@ -11,7 +11,7 @@ from selenium.common.exceptions import (
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
-
+from omsd_autmation.tests import test_config as C   # Import your config
 from omsd_autmation.utils.config_reader import Config
 
 
@@ -27,9 +27,8 @@ class BasePage:
         """Find a single element."""
         return WebDriverWait(self.driver, self.timeout).until(EC.presence_of_element_located(locator))
 
-    def delay(self, seconds=None):
-        """Simple sleep delay."""
-        time.sleep(seconds or self.DEFAULT_TIMEOUT)
+    def wait_for_seconds(self, seconds):
+        time.sleep(seconds)
 
     def find_all(self, locator):
         """Find all elements matching the locator."""
@@ -125,7 +124,6 @@ class BasePage:
         WebDriverWait(self.driver, t).until(EC.invisibility_of_element_located(locator))
 
     def wait_for_title(self, title_text, timeout=None):
-        self.delay()
         """Wait for page title to contain specific text."""
         t = timeout or self.timeout
         return WebDriverWait(self.driver, t).until(EC.title_contains(title_text))
@@ -243,12 +241,14 @@ class BasePage:
     #     self.driver.save_screenshot(path)
     #     return path
 
-    def take_screenshot(self, step_name):
-        folder = "screenshots"
-        os.makedirs(folder, exist_ok=True)
-        filename = os.path.join(folder, f"{step_name}.png")
-        self.driver.save_screenshot(filename)
-        print(f"Screenshot saved: {filename}")
+    def take_screenshot(self, step_name: str):
+        """Takes a screenshot and saves it in the configured screenshots folder."""
+        timestamp = time.strftime("%Y%m%d_%H%M%S")
+        filename = f"{step_name}_{timestamp}.png"
+        filepath = C.SCREENSHOTS_DIR / filename
+        self.driver.save_screenshot(str(filepath))
+        print(f"📸 Screenshot saved: {filepath}")
+        return filepath
     # --- Misc utility methods ---
     def get_title(self):
         """Get current page title."""
@@ -506,3 +506,17 @@ class BasePage:
         """
         for locator, desired_state in checkboxes_config.items():
             self.set_checkbox_state(locator, desired_state, timeout)
+
+    def wait_for_page_to_reappear(self, locator, timeout=10):
+        """
+        Wait for a specific element (usually from login or landing page)
+        to reappear after logout/session expiration.
+
+        Args:
+            locator: Tuple (By, selector) for the element that identifies the page
+            timeout: Max wait time
+        """
+        return WebDriverWait(self.driver, timeout).until(
+            EC.presence_of_element_located(locator)
+        )
+

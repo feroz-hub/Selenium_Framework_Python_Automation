@@ -1,68 +1,115 @@
+import platform
 import pytest
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.firefox.service import Service as FirefoxService
 from selenium.webdriver.edge.service import Service as EdgeService
-from selenium.webdriver.safari.webdriver import WebDriver as SafariDriver
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
 from webdriver_manager.microsoft import EdgeChromiumDriverManager
 
 from .utils.config_reader import Config
 from .utils.logger import get_logger
+from omsd_autmation.tests import test_config as C   # import dirs (UPLOAD_DIR, DOWNLOAD_DIR)
+
+# Import page objects
+from omsd_autmation.pages.base_page import BasePage
+from omsd_autmation.pages.login_page import LoginPage
+from omsd_autmation.pages.software_page import SoftwarePage
+from omsd_autmation.pages.upload_page import UploadPage
+from omsd_autmation.pages.home_page import HomePage
 
 logger = get_logger(__name__)
 
 
+# ----------------------------
+# Driver Fixture
+# ----------------------------
 @pytest.fixture
 def driver():
     browser = Config.get("browser", "chrome").lower()
     headless = Config.get("headless", False)
+    implicit_wait = Config.get("implicit_wait", 5)
+    base_url = Config.get("base_url")
 
     logger.info(f"🚀 Starting browser: {browser}, Headless: {headless}")
-    chromedriver_path = 'C:\\Users\\ferozebasha.s\\Downloads\\chromedriver-win64\\chromedriver-win64\\chromedriver.exe'
+    system_os = platform.system().lower()
 
     if browser == "chrome":
         options = webdriver.ChromeOptions()
         if headless:
             options.add_argument("--headless=new")
-        driver = webdriver.Chrome(
-            #service=ChromeService(ChromeDriverManager().install()),
-            service=ChromeService(executable_path=chromedriver_path),
-            options=options,
-        )
+
+        # ✅ force downloads into project downloads folder
+        prefs = {
+            "download.default_directory": str(C.DOWNLOAD_DIR.resolve()),
+            "download.prompt_for_download": False,
+            "download.directory_upgrade": True,
+            "safebrowsing.enabled": True,
+        }
+        options.add_experimental_option("prefs", prefs)
+
+        if system_os == "darwin":
+            service = ChromeService(ChromeDriverManager().install())
+        else:
+            chromedriver_path = r"C:\Users\ferozebasha.s\Downloads\chromedriver-win64\chromedriver.exe"
+            service = ChromeService(executable_path=chromedriver_path)
+
+        driver = webdriver.Chrome(service=service, options=options)
 
     elif browser == "firefox":
         options = webdriver.FirefoxOptions()
         if headless:
             options.add_argument("--headless")
-        driver = webdriver.Firefox(
-            service=FirefoxService(GeckoDriverManager().install()),
-            options=options,
+
+        profile = webdriver.FirefoxProfile()
+        profile.set_preference("browser.download.folderList", 2)  # custom dir
+        profile.set_preference("browser.download.dir", str(C.DOWNLOAD_DIR.resolve()))
+        profile.set_preference(
+            "browser.helperApps.neverAsk.saveToDisk",
+            "application/octet-stream,application/zip,application/pdf"
         )
+
+        if system_os == "darwin":
+            service = FirefoxService(GeckoDriverManager().install())
+        else:
+            geckodriver_path = r"path_to_your_local_geckodriver.exe"
+            service = FirefoxService(executable_path=geckodriver_path)
+
+        driver = webdriver.Firefox(service=service, options=options, firefox_profile=profile)
 
     elif browser == "edge":
-
-        options = webdriver.Edge()
+        options = webdriver.EdgeOptions()
         if headless:
             options.add_argument("--headless=new")
-        driver = webdriver.Edge(
-            service=EdgeService(EdgeChromiumDriverManager().install()),
-            options=options,
-        )
+
+        prefs = {
+            "download.default_directory": str(C.DOWNLOAD_DIR.resolve()),
+            "download.prompt_for_download": False,
+            "download.directory_upgrade": True,
+            "safebrowsing.enabled": True,
+        }
+        options.add_experimental_option("prefs", prefs)
+
+        if system_os == "darwin":
+            service = EdgeService(EdgeChromiumDriverManager().install())
+        else:
+            edgedriver_path = r"path_to_your_local_edgedriver.exe"
+            service = EdgeService(executable_path=edgedriver_path)
+
+        driver = webdriver.Edge(service=service, options=options)
 
     elif browser == "safari":
-        driver = SafariDriver()
+        if system_os != "darwin":
+            raise ValueError("Safari is only supported on macOS")
+        driver = webdriver.Safari()
 
     else:
         logger.error(f"❌ Unsupported browser: {browser}")
         raise ValueError(f"❌ Unsupported browser: {browser}")
 
     driver.maximize_window()
-    implicit_wait = Config.get("implicit_wait", 5)
     driver.implicitly_wait(implicit_wait)
-
-    base_url = Config.get("base_url")
     logger.info(f"🌐 Navigating to: {base_url}")
     driver.get(base_url)
 
@@ -70,3 +117,27 @@ def driver():
 
     logger.info("🛑 Quitting browser session")
     driver.quit()
+
+
+# ----------------------------
+# Page Fixtures
+# ----------------------------
+@pytest.fixture
+def base_page(driver):
+    return BasePage(driver)
+
+@pytest.fixture
+def login_page(driver):
+    return LoginPage(driver)
+
+@pytest.fixture
+def software_page(driver):
+    return SoftwarePage(driver)
+
+@pytest.fixture
+def upload_page(driver):
+    return UploadPage(driver)
+
+@pytest.fixture
+def home_page(driver):
+    return HomePage(driver)

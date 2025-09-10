@@ -11,6 +11,7 @@ from typing import List
 # Test file paths
 TEST_BASE_DIR = Path(__file__).parent.parent
 UPLOAD_DIR = TEST_BASE_DIR / "uploads"
+DOWNLOAD_DIR = TEST_BASE_DIR / "downloads"
 SCREENSHOTS_DIR = TEST_BASE_DIR / "screenshots"
 LOGS_DIR = TEST_BASE_DIR / "logs"
 
@@ -19,7 +20,7 @@ DEFAULT_PRODUCT = "ESG-410"
 TEST_PRODUCTS: List[str] = ["ESG-410", "ESG-420"]
 
 # Test file configuration
-TEST_FILE_NAME = "ESG-410_v01.00.00.00-New_7"
+TEST_FILE_NAME = "ESG-410_v01.00.00.00-New_11"
 
 # Timeout configuration (in seconds)
 DEFAULT_TIMEOUT = 15

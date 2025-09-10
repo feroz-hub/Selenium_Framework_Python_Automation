@@ -119,21 +119,21 @@ class UploadPage(BasePage):
             str: Toast text
         """
         # Wait before toast appears
-        print(f"⏳ Waiting {pre_wait}s before toast appears...")
+        # print(f"⏳ Waiting {pre_wait}s before toast appears...")
         time.sleep(pre_wait)
-        self.take_screenshot(f"{screenshot_prefix}_before.png")
+        # self.take_screenshot(f"{screenshot_prefix}_before.png")
         # Wait for toast
-        print("⏳ Waiting for toast message...")
+        # print("⏳ Waiting for toast message...")
         toast_element = WebDriverWait(self.driver, timeout).until(
             EC.visibility_of_element_located(self.TOAST_CONTAINER)
         )
-        self.take_screenshot(f"{screenshot_prefix}_appeared.png")
+        # self.take_screenshot(f"{screenshot_prefix}_appeared.png")
         message = toast_element.text
-        print("📢 Toast message:", message)
+        # print("📢 Toast message:", message)
         # Wait after toast appears
-        print(f"⏳ Waiting {post_wait}s after toast...")
+        # print(f"⏳ Waiting {post_wait}s after toast...")
         time.sleep(post_wait)
-        self.take_screenshot(f"{screenshot_prefix}_after.png")
+        # self.take_screenshot(f"{screenshot_prefix}_after.png")
         return message
     def submit_upload(self):
         """Clicks the two confirmation buttons to finalize the upload."""
@@ -151,3 +151,48 @@ class UploadPage(BasePage):
         self.upload_file(file_path)
         self.fill_upload_details()
         self.submit_upload()
+
+
+
+    def wait_for_uploaded_file_name(self, expected_name, timeout=30, poll_frequency=0.5):
+        """
+        Waits for the uploaded file name to appear anywhere sensible (toast, table, list).
+        Returns the text found. Raises TimeoutException with diagnostics if not found.
+        """
+        end = time.time() + timeout
+        while time.time() < end:
+            # 1) Wait for any overlay/spinner to disappear before checking
+            try:
+                WebDriverWait(self.driver, 3).until(
+                    EC.invisibility_of_element_located((By.CSS_SELECTOR, ".loading-spinner, .overlay"))
+                )
+            except Exception:
+                pass
+
+            # 2) Try a set of XPaths (table cells, anchors, toast, spans)
+            xpaths = [
+                f"//table//td[normalize-space(text()) = '{expected_name}']",
+                f"//table//td[contains(normalize-space(.), '{expected_name}')]",
+                f"//tr//a[contains(normalize-space(.), '{expected_name}')]",
+                f"//div[contains(@class,'package-list')]//span[contains(normalize-space(.), '{expected_name}')]",
+                f"//div[contains(@class,'toast') and contains(., '{expected_name}')]",
+                # fallback: any element containing the text
+                f"//*[contains(normalize-space(.), '{expected_name}')]"
+            ]
+
+            for xp in xpaths:
+                try:
+                    el = self.driver.find_element(By.XPATH, xp)
+                    if el and el.is_displayed():
+                        return el.text.strip()
+                except Exception:
+                    continue
+
+            time.sleep(poll_frequency)
+
+        # Diagnostics on failure
+        ts = int(time.time())
+        with open(f"upload_wait_diagnostics_{ts}.html", "w", encoding="utf-8") as fh:
+            fh.write(self.driver.page_source)
+        self.driver.save_screenshot(f"upload_wait_diagnostics_{ts}.png")
+        raise TimeoutException(f"Timeout waiting for uploaded file name '{expected_name}'. Diagnostics saved.")
