@@ -60,7 +60,7 @@ def test_delete_software(driver, base_page, login_page, software_page, home_page
         toast_locator = (By.CSS_SELECTOR, "#toast-container .toast")
         toast_text = base_page.wait_for_element(toast_locator, timeout=20).text
         log.verification("Toast message confirms deletion", "deleted" in toast_text.lower())
-        base_page.take_screenshot("ST07-04_Deleted")
+        #base_page.take_screenshot("ST07-04_Deleted")
 
         # Step 6: Verify Software is Removed from List
         log.step("Step 6: Verify the software no longer appears in the list")
