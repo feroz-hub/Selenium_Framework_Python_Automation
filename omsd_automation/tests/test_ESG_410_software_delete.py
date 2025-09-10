@@ -19,10 +19,11 @@ def test_delete_software(authenticated_session, driver, base_page, login_page, s
 
         # Step 2: Navigate to Product Software List
         log.step("Step 2: Navigate to the product software list")
-        software_page.open_software_list(C.OMSD_ESG_410)
-        base_page.wait_for_seconds(2)
+        software_page.navigate_to_product_software(C.OMSD_ESG_410)
+        log.action(f"Navigated to software list for product: {C.OMSD_ESG_410}")
         log.page_info(driver.title, driver.current_url)
         base_page.take_screenshot("ST07-02_SoftwareList")
+
 
         # Step 3: Select Uploaded Software
         log.step("Step 3: Select the uploaded software to delete")

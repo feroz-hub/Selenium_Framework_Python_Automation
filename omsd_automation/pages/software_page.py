@@ -34,7 +34,21 @@ class SoftwarePage(BasePage):
     SOFTWARE_LIST_BTN_TEMPLATE = "//h5[text()='{}']/following-sibling::input[@value='Software List']"
     PRODUCT_HEADER_TEMPLATE = "//h5[text()='{}']"
     ALL_BUTTONS_FOR_PRODUCT_TEMPLATE = "//h5[text()='{}']/following-sibling::input"
-    
+
+    def navigate_to_product_software(self, product_name: str) -> None:
+        """
+        Navigate to the software list of a specific product.
+
+        Args:
+            product_name: The name of the product to navigate to
+
+        Example:
+            >>> software_page.navigate_to_product_software("ESG-410")
+        """
+
+        self.open_software_list(product_name)
+        time.sleep(2)  # Allow time for page transition
+
     # Debug locators for troubleshooting
     ALL_PRODUCTS_LOCATOR = (By.XPATH, "//h5")
 
