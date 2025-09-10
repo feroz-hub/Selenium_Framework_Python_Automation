@@ -151,10 +151,11 @@ def home_page(driver):
 
 
 @pytest.fixture(scope="function")
-def authenticated_session(driver):
+def authenticated_session(driver, request):
     """
     Pytest fixture to handle login before a test and logout after the test.
-
+    Use like:
+    @pytest.mark.parametrize("authenticated_session", ["software_uploader"], indirect=True)
     Parameters:
     - driver: WebDriver instance
     - login_page: Page object for login operations
@@ -163,11 +164,12 @@ def authenticated_session(driver):
     - log: Logger object
     """
     # Login before test
-    log = setup_test_logging("login_session")
+    role = getattr(request, "param", "software_uploader")
+    log = setup_test_logging(f"login_session[{role}]")
     login_page = LoginPage(driver)
     base_page = BasePage(driver)
     home_page = HomePage(driver)
-    LoginUtils.login_as_software_uploader(login_page, base_page, log, driver)
+    LoginUtils.login_as_role(login_page, base_page, log, driver, role)
     yield home_page
     # Logout after test
     LogoutUtils.sign_out_user(home_page, base_page, login_page, log, driver)

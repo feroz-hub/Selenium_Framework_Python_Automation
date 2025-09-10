@@ -50,7 +50,18 @@ class BasePage:
         except ElementClickInterceptedException:
             # Fallback: JS click
             self.driver.execute_script("arguments[0].click();", el)
-
+    def find_element(self, locator):
+        """Find a single element."""
+        return WebDriverWait(self.driver, self.timeout).until(EC.presence_of_element_located(locator))
+    def click_scroll(self, locator):
+        el = self.find_element(locator)
+        try:
+            self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", el)
+            WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(locator))
+            el.click()
+        except Exception:
+            self.log.warning(f"Normal click failed, retrying with JS click: {locator}")
+            self.driver.execute_script("arguments[0].click();", el)
     def click_when_ready(self, locator, timeout=15, poll_frequency=0.5):
         """Click an element safely after overlay disappears and retry if intercepted."""
         end_time = time.time() + timeout

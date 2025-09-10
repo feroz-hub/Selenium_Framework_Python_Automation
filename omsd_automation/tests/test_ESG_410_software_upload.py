@@ -12,7 +12,7 @@ from omsd_automation.utils.element_helper import fallback_find_uploaded_name
 from omsd_automation.utils.logger import setup_test_logging
 
 
-@pytest.mark.smoke
+@pytest.mark.parametrize("authenticated_session", ["software_uploader"], indirect=True)
 def test_upload_software(authenticated_session, driver, base_page, login_page, software_page, upload_page, home_page):
     """
     Full test for uploading a software package.
@@ -226,7 +226,7 @@ def test_upload_software(authenticated_session, driver, base_page, login_page, s
         log.test_end("test_upload_software", success=test_passed)
 
 
-@pytest.mark.software_upload
+@pytest.mark.parametrize("authenticated_session", ["software_uploader"], indirect=True)
 def test_public_bc_setting(authenticated_session, driver, base_page, login_page, software_page, upload_page, home_page):
     """
     Test to verify the 'Public BC' setting during software upload.
@@ -271,6 +271,74 @@ def test_public_bc_setting(authenticated_session, driver, base_page, login_page,
         # Step 4: Change Public BC setting
         log.step("Step 4: Change Public BC setting")
         upload_page.update_bc_setting()
+        base_page.wait_for_seconds(2)
+
+        # Step 5: Verify Update via Toast Message
+        toast_locator = (By.CSS_SELECTOR, "#toast-container .toast")
+        toast_text = base_page.wait_for_element(toast_locator, timeout=10).text
+        log.verification("Toast message confirms saved", "save" in toast_text.lower())
+        base_page.take_screenshot("ST07-04_Deleted")
+
+        # # Step 7: Sign Out
+        # SignOut is happened in pytest fixture
+
+        test_passed = True
+
+    except Exception as e:
+        log.error(f"Exception occurred during test: {e}")
+        base_page.take_screenshot("ST07_Error")
+        raise
+
+    finally:
+        log.test_end("bc_setting_updated", success=test_passed)
+
+
+@pytest.mark.parametrize("authenticated_session", ["distribution_manager"], indirect=True)
+def test_public_country_setting(authenticated_session, driver, base_page, login_page, software_page, upload_page,
+                                home_page):
+    """
+    Test to verify the 'Public Country' setting during software upload.
+    Steps:
+    1. Login as distribution manager.
+    2. Navigate to product software list.
+    3. Upload a software package with 'Public Country' enabled.
+    4. Verify the upload was successful via toast and list.
+    5. Reopen the uploaded package and verify 'Public Country' is still enabled.
+    6. Sign out and verify redirection to login page.
+    """
+    log = setup_test_logging("upload_software_public_country")
+    log.test_start("test_upload_software_public_country")
+    test_passed = False
+
+    try:
+        # --- Step 1: Login ---
+        # authenticated_session is a pytest fixture that logs in once per module
+
+        # --- Step 2: Navigate to product software list ---
+        log.step("Step 2: Navigate to product software list")
+        log.action(f"Opening software list for product: '{C.OMSD_ESG_410}'")
+        software_page.open_software_list(C.OMSD_ESG_410)
+        log.verification(f"Successfully navigated to the software list for '{C.OMSD_ESG_410}'", True)
+        log.page_info(driver.title, driver.current_url)
+
+        # --- Step 3: Select Uploaded software ---
+
+        log.step("Step 3: Select the uploaded software to change Public Country setting")
+        file_to_update = "ESG-410_v01.00.00.00-Hema"
+        log.action(f"Looking for uploaded software file: {file_to_update}")
+
+        file_link_locator = (
+            By.XPATH,
+            f"//a[@class='packageNameTitle' and normalize-space(text())='{file_to_update}']"
+        )
+        file_element = base_page.wait_for_element_to_be_clickable(file_link_locator, timeout=10)
+        file_element.click()
+        base_page.take_screenshot("ST08-03_SelectedSoftware")
+        log.verification(f"Selected software '{file_to_update}'", True)
+
+        # Step 4: Change Public Country setting
+        log.step("Step 4: Change Public Country setting")
+        upload_page.update_country_setting()
         base_page.wait_for_seconds(2)
 
         # Step 5: Verify Update via Toast Message

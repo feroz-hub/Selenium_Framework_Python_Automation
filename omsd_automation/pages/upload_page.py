@@ -26,12 +26,13 @@ class UploadPage(BasePage):
     REGION_CHECKBOX = (By.XPATH, "//div[@id='regions']//label[contains(., 'OMSI')]/span[@class='checkbox-icon']")
     DO_NOT_DISPLAY_RADIO = (By.XPATH, "//input[@name='groupIsEnabled' and @value='false']")
     DISPLAY_RADIO = (By.XPATH, "//input[@name='groupIsEnabled' and @value='true']")
-    ADD_CONFIRM_BTN = (By.ID, "btnAddConfirm")
-    EDIT_CONFIRM_BTN = (By.ID, "btnEditConfirm")
-    SAVE_CONFIRM_BTN = (By.ID, "btnEditSave")
-    UPLOAD_CONFIRM_BTN = (By.ID, "btnAddSave")
+    BTN_ADD_CONFIRM = (By.ID, "btnAddConfirm")
+    BTN_EDIT_CONFIRM = (By.ID, "btnEditConfirm")
+    BTN_EDIT_SAVE = (By.ID, "btnEditSave")
+    BTN_UPLOAD_CONFIRM = (By.ID, "btnAddSave")
     TOAST_CONTAINER = (By.CSS_SELECTOR, "#toast-container .toast")
     UPLOADED_FILE_NAME = (By.CSS_SELECTOR, "#toast-container .toast font[size='3']")
+    CHK_ALL_COUNTRIES = (By.CSS_SELECTOR, "label.bcAllLabel .checkbox-icon")
 
     def __init__(self, driver: WebDriver, logger):
         super().__init__(driver)
@@ -108,12 +109,21 @@ class UploadPage(BasePage):
         self.log.action("Setting display status radio button.")
         self.click(self.DISPLAY_RADIO)
         self.log.action("Clicking 'Confirm' button on the initial upload form.")
-        self.click(self.EDIT_CONFIRM_BTN)
+        self.click(self.BTN_EDIT_CONFIRM)
         self.log.wait_start("Waiting for the final 'Save' confirmation button to be clickable.", timeout)
-        self.wait_for_element_to_be_clickable(self.SAVE_CONFIRM_BTN)
+        self.wait_for_element_to_be_clickable(self.BTN_EDIT_SAVE)
         self.log.action("Clicking the final 'Update' confirmation button.")
-        self.click(self.SAVE_CONFIRM_BTN)
+        self.click(self.BTN_EDIT_SAVE)
 
+    def update_country_setting(self, timeout=10):
+
+        self.click_scroll(self.CHK_ALL_COUNTRIES)
+        self.log.action("Clicking 'Confirm' button on the initial upload form.")
+        self.click(self.BTN_EDIT_CONFIRM)
+        self.log.wait_start("Waiting for the final 'Save' confirmation button to be clickable.", timeout)
+        self.wait_for_element_to_be_clickable(self.BTN_EDIT_SAVE)
+        self.log.action("Clicking the final 'Update' confirmation button.")
+        self.click(self.BTN_EDIT_SAVE)
     def wait_for_toast(self, timeout=10, pre_wait=3, post_wait=2, screenshot_prefix="toast"):
         """
         Wait for toast message with optional pre/post waits and take screenshots.
@@ -146,11 +156,11 @@ class UploadPage(BasePage):
     def submit_upload(self):
         """Clicks the two confirmation buttons to finalize the upload."""
         self.log.action("Clicking 'Confirm' button on the initial upload form.")
-        self.click(self.ADD_CONFIRM_BTN)
+        self.click(self.BTN_ADD_CONFIRM)
         self.log.wait_start("Waiting for the final 'Upload' confirmation button to be clickable.", 10)
-        self.wait_for_element_to_be_clickable(self.UPLOAD_CONFIRM_BTN)
+        self.wait_for_element_to_be_clickable(self.BTN_UPLOAD_CONFIRM)
         self.log.action("Clicking the final 'Upload' confirmation button.")
-        self.click(self.UPLOAD_CONFIRM_BTN)
+        self.click(self.BTN_UPLOAD_CONFIRM)
 
     def perform_upload(self, file_path: str):
         """High-level flow that orchestrates the entire upload process."""

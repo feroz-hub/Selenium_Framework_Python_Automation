@@ -1,7 +1,6 @@
 import pytest
 from selenium.webdriver.common.by import By
 
-from omsd_automation.pages.home_page import HomePage
 from omsd_automation.tests import test_config as C
 from omsd_automation.utils.logger import setup_test_logging
 

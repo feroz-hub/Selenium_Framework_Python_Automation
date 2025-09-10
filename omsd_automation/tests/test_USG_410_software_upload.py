@@ -51,9 +51,9 @@ def test_upload_software(driver, base_page, login_page, software_page, upload_pa
 
         # --- Step 2: Navigate to product software list ---
         log.step("Step 2: Navigate to product software list")
-        log.action(f"Opening software list for product: '{C.OMSD_ESG_410}'")
-        software_page.open_software_list(C.OMSD_ESG_410)
-        log.verification(f"Successfully navigated to the software list for '{C.OMSD_ESG_410}'", True)
+        log.action(f"Opening software list for product: '{C.OMSD_USG_410}'")
+        software_page.open_software_list(C.OMSD_USG_410)
+        log.verification(f"Successfully navigated to the software list for '{C.OMSD_USG_410}'", True)
         log.page_info(driver.title, driver.current_url)
 
         # --- Step 3: Upload software ---

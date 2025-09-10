@@ -4,9 +4,8 @@ from omsd_automation.tests import test_config as C
 
 class LoginUtils:
     @staticmethod
-    def login_as_software_uploader(login_page, base_page, log, driver):
-        """
-        Logs into the application using the SOFTWARE_UPLOADER_ROLE credentials.
+    def login_as_role(login_page, base_page, log, driver, role: str):
+        """Login to the application using credentials for a specified user role.
 
         Parameters:
         - login_page: Page object for login operations
@@ -15,13 +14,11 @@ class LoginUtils:
         - driver: WebDriver instance
         """
         log.step("Step 1: Login to the application")
+        creds = Config.get_user(role)
+        username = creds.get("username")
+        password = creds.get("password")
 
-        username_path = f"environments.staging.users.{C.SOFTWARE_UPLOADER_ROLE}.username"
-        password_path = f"environments.staging.users.{C.SOFTWARE_UPLOADER_ROLE}.password"
-        username = Config.get(username_path)
-        password = Config.get(password_path)
-
-        log.action(f"Attempting to log in with user role: {C.SOFTWARE_UPLOADER_ROLE}")
+        log.action(f"Attempting to log in with user role: {role}")
         login_page.login(username, password)
 
         login_page.wait_for_title(C.APP_TITLE, timeout=C.LOGIN_TIMEOUT)

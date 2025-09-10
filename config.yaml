@@ -9,8 +9,8 @@ environments:
         username: "48200010.olympusssa.onmicrosoft.com@amer.teams.ms"
         password: "9xFXgZQR@kdgj"
       distribution_manager:
-        username: "stg_manager"
-        password: "stg_manager_password"
+        username: "c810ef29.olympusssa.onmicrosoft.com@amer.teams.ms"
+        password: "Sp0&xKgS*p4DFW"
 
   prod:
     base_url: "https://softwaredelivery.olympusmedical.com"
