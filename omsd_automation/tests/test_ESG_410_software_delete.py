@@ -56,7 +56,7 @@ def test_delete_software(authenticated_session, driver, base_page, login_page, s
         log.verification("Toast message confirms deletion", "deleted" in toast_text.lower())
         base_page.take_screenshot("ST07-04_Deleted")
 
-        # Step 6: Verify Software is Removed from List
+        # Step 6: Verify Software is Removed from the List
         log.step("Step 6: Verify the software no longer appears in the list")
         driver.refresh()
         try:

@@ -102,7 +102,7 @@ def test_upload_software(authenticated_session, driver, base_page, login_page, s
                     download_button.click()
                 except Exception as e:
                     log.error(f"Could not find download button via fallback: {e}")
-                    # save diagnostics and continue (don't fail test just because download couldn't start)
+                    # save diagnostics and continue (don't fail the test just because download couldn't start)
                     ts = int(time.time())
                     driver.save_screenshot(f"download_button_not_found_{ts}.png")
                     with open(f"download_button_not_found_{ts}.html", "w", encoding="utf-8") as fh:
@@ -151,7 +151,7 @@ def test_upload_software(authenticated_session, driver, base_page, login_page, s
                     raise
 
         except Exception as e:
-            # don't let download failure obscure the upload verification; raise after diagnostics
+            # don't let download failure obscure the upload verification; rise after diagnostics
             log.error(f"Failed while initiating download: {e}")
             raise
 
