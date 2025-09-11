@@ -4,9 +4,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 
-from omsd_automation.pages.base_page import BasePage
+from omsd_automation.pages.base.base_page import BasePage
 # Import the class-level logger utility
-from omsd_automation.utils.logger import setup_test_logging
 import time
 import os
 

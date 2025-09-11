@@ -11,7 +11,7 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
 
-from omsd_automation.pages.base_page import BasePage
+from omsd_automation.pages.base.base_page import BasePage
 # from omsd_automation.utils.logger import get_logger, TestLogger
 
 

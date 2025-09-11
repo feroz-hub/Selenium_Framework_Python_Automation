@@ -1,6 +1,6 @@
 # pages/login_page.py
 from selenium.webdriver.common.by import By
-from omsd_automation.pages.base_page import BasePage
+from omsd_automation.pages.base.base_page import BasePage
 
 
 class LoginPage(BasePage):

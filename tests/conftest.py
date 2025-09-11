@@ -14,7 +14,7 @@ from tests import test_config as C  # import dirs (UPLOAD_DIR, DOWNLOAD_DIR)
 from omsd_automation.utils.login_utils import LoginUtils
 from omsd_automation.utils.logout_utils import LogoutUtils
 # Import page objects
-from omsd_automation.pages.base_page import BasePage
+from omsd_automation.pages.base.base_page import BasePage
 from omsd_automation.pages.login_page import LoginPage
 from omsd_automation.pages.software_page import SoftwarePage
 from omsd_automation.pages.upload_page import UploadPage
