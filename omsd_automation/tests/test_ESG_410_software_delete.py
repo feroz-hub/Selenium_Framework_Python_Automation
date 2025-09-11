@@ -17,7 +17,7 @@ def test_delete_software(authenticated_session, driver, base_page, login_page, s
         # Step 1: Login
         # assumed done in authenticated_session fixture
 
-        # Step 2: Navigate to Product Software List
+        # Step 2: Navigate to the Product Software List
         log.step("Step 2: Navigate to the product software list")
         software_page.navigate_to_product_software(C.OMSD_ESG_410)
         log.action(f"Navigated to software list for product: {C.OMSD_ESG_410}")

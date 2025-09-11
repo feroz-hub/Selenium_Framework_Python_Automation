@@ -18,9 +18,9 @@ def test_upload_software(authenticated_session, driver, base_page, login_page, s
     Full test for uploading a software package.
     Improvements:
     - Robust wait for uploaded file name with diagnostics on failure.
-    - Relaxed comparison (use contains) to tolerate small UI suffixes/prefixes.
+    - Relaxed comparison (use contents) to tolerate small UI suffixes/prefixes.
     - Find download button by locating the row containing the filename.
-    - Capture screenshot / page source on failures for easier debugging.
+    - Capture a screenshot / page source on failures for easier debugging.
     """
     log = setup_test_logging("upload_software")
     log.test_start("test_upload_software")
@@ -30,7 +30,7 @@ def test_upload_software(authenticated_session, driver, base_page, login_page, s
         # --- Step 1: Login ---
         # authenticated_session is a pytest fixture that logs in once per module
 
-        # --- Step 2: Navigate to product software list ---
+        # --- Step 2: Navigate to a product software list ---
         log.step("Step 2: Navigate to product software list")
         log.action(f"Opening software list for product: '{C.OMSD_ESG_410}'")
         software_page.navigate_to_product_software(C.OMSD_ESG_410)
@@ -59,7 +59,7 @@ def test_upload_software(authenticated_session, driver, base_page, login_page, s
         log.step("Step 4: Verify upload was successful")
         base_page.wait_for_seconds(1)
 
-        # Wait for toast and verify expected message
+        # Wait for toast and verify an expected message
         try:
             toast_text = upload_page.wait_for_toast(timeout=C.DEFAULT_TIMEOUT)
             base_page.take_screenshot("ST06-12")
@@ -76,7 +76,7 @@ def test_upload_software(authenticated_session, driver, base_page, login_page, s
                 fh.write(driver.page_source)
             raise
 
-        # Robust wait for filename to appear in the UI.
+        # Robust wait for the filename to appear in the UI.
         # We'll try the page object's method first (if it supports passing expected_name).
         # If it times out, fallback to an internal search with diagnostics.
 
@@ -85,16 +85,16 @@ def test_upload_software(authenticated_session, driver, base_page, login_page, s
         found_file_text = None
 
         try:
-            # prefer page object's implementation if it accepts expected name and timeout
+            # prefer page object's implementation if it accepts the expected name and timeout
             try:
-                # some page objects accept expected_name argument
+                # some page objects accept the expected_name argument
                 found_file_text = upload_page.wait_for_uploaded_file_name(expected_name=file_to_upload,
                                                                           timeout=list_timeout)
             except TypeError:
-                # fallback: call without named parameter if it doesn't accept it
+                # fallback: call without a named parameter if it doesn't accept it
                 found_file_text = upload_page.wait_for_uploaded_file_name(file_to_upload, timeout=list_timeout)
         except TimeoutException:
-            # fallback search using driver + multiple xpaths
+            # fallback search using a driver + multiple xpaths
             log.warning("Primary wait_for_uploaded_file_name timed out; trying fallback search.")
             found_file_text = fallback_find_uploaded_name(driver, file_to_upload, timeout=list_timeout, log=log)
 
@@ -115,10 +115,10 @@ def test_upload_software(authenticated_session, driver, base_page, login_page, s
                 fh.write(driver.page_source)
             raise TimeoutException(f"Uploaded file name '{file_to_upload}' not found in UI. Diagnostics saved.")
 
-        # If file found, attempt download by locating row and clicking download action inside it
+        # If a file found, attempt download by locating the row and clicking download action inside it
         log.step("Step 5: Download the uploaded file before sign-out")
         try:
-            # Attempt to find row containing the file and then the download button within that row
+            # Attempt to find a row containing the file and then the download button within that row
             # Several possible table/list patterns are supported
             escaped = file_to_upload.replace("'", "\\'")
             possible_row_xpaths = [
