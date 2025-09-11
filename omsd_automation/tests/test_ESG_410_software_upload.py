@@ -10,6 +10,7 @@ from selenium.webdriver.common.by import By
 from omsd_automation.tests import test_config as C
 from omsd_automation.utils.element_helper import fallback_find_uploaded_name
 from omsd_automation.utils.logger import setup_test_logging
+from omsd_automation.utils.upload_flow import build_upload_path, verify_toast, wait_for_uploaded_name_with_fallback, normalize_and_assert_filename, click_download_for_filename
 
 
 @pytest.mark.parametrize("authenticated_session", ["software_uploader"], indirect=True)
@@ -43,15 +44,7 @@ def test_upload_software(authenticated_session, driver, base_page, login_page, s
         base_page.take_screenshot("ST06-11")
 
         file_to_upload = C.TEST_FILE_NAME
-        # ensure UPLOAD_DIR is a Path object (C.UPLOAD_DIR / file_to_upload used earlier)
-        file_path = Path(C.UPLOAD_DIR) / file_to_upload if not isinstance(C.UPLOAD_DIR,
-                                                                          Path) else C.UPLOAD_DIR / file_to_upload
-        log.debug(f"Constructed file path for upload: {file_path}")
-
-        if not file_path.exists():
-            log.error(f"Upload file does not exist: {file_path}")
-            raise FileNotFoundError(f"Upload file does not exist: {file_path}")
-
+        file_path = build_upload_path(C.UPLOAD_DIR, file_to_upload, log)
         log.action(f"Uploading file: '{file_path.name}'")
         upload_page.perform_upload(str(file_path))
 
@@ -60,21 +53,7 @@ def test_upload_software(authenticated_session, driver, base_page, login_page, s
         base_page.wait_for_seconds(1)
 
         # Wait for toast and verify an expected message
-        try:
-            toast_text = upload_page.wait_for_toast(timeout=C.DEFAULT_TIMEOUT)
-            base_page.take_screenshot("ST06-12")
-            expected_toast = "The software has been added."
-            toast_verification_result = expected_toast in (toast_text or "")
-            log.verification(f"Toast message contains '{expected_toast}'", toast_verification_result)
-            assert toast_verification_result, f"Toast message was '{toast_text}' but expected '{expected_toast}'"
-        except Exception as e:
-            log.error(f"Failed to read toast: {e}")
-            # capture diagnostics and re-raise
-            ts = int(time.time())
-            driver.save_screenshot(f"toast_failed_{ts}.png")
-            with open(f"toast_failed_{ts}.html", "w", encoding="utf-8") as fh:
-                fh.write(driver.page_source)
-            raise
+        verify_toast(upload_page, base_page, driver, "The software has been added.", C.DEFAULT_TIMEOUT, log)
 
         # Robust wait for the filename to appear in the UI.
         # We'll try the page object's method first (if it supports passing expected_name).
@@ -82,38 +61,12 @@ def test_upload_software(authenticated_session, driver, base_page, login_page, s
 
         # Increase timeout for list appearance (allow longer server-side processing)
         list_timeout = getattr(C, "UPLOAD_WAIT_TIMEOUT", max(C.DEFAULT_TIMEOUT, 60))
-        found_file_text = None
-
-        try:
-            # prefer page object's implementation if it accepts the expected name and timeout
-            try:
-                # some page objects accept the expected_name argument
-                found_file_text = upload_page.wait_for_uploaded_file_name(expected_name=file_to_upload,
-                                                                          timeout=list_timeout)
-            except TypeError:
-                # fallback: call without a named parameter if it doesn't accept it
-                found_file_text = upload_page.wait_for_uploaded_file_name(file_to_upload, timeout=list_timeout)
-        except TimeoutException:
-            # fallback search using a driver + multiple xpaths
-            log.warning("Primary wait_for_uploaded_file_name timed out; trying fallback search.")
-            found_file_text = fallback_find_uploaded_name(driver, file_to_upload, timeout=list_timeout, log=log)
+        found_file_text = wait_for_uploaded_name_with_fallback(
+            upload_page, driver, file_to_upload, list_timeout, log, fallback_find_uploaded_name
+        )
 
         # Normalize and verify file name (allow contains match)
-        if found_file_text:
-            found_stripped = found_file_text.strip()
-            expected_stripped = file_to_upload.strip()
-            file_name_verification_result = (expected_stripped in found_stripped) or (
-                    found_stripped in expected_stripped)
-            log.verification(f"Uploaded file name in the list (found) is '{found_file_text}'",
-                             file_name_verification_result)
-            assert file_name_verification_result, f"File name in list was '{found_file_text}' but expected to contain '{file_to_upload}'"
-        else:
-            # diagnostics if not found
-            ts = int(time.time())
-            driver.save_screenshot(f"upload_file_not_found_{ts}.png")
-            with open(f"upload_file_not_found_{ts}.html", "w", encoding="utf-8") as fh:
-                fh.write(driver.page_source)
-            raise TimeoutException(f"Uploaded file name '{file_to_upload}' not found in UI. Diagnostics saved.")
+        normalize_and_assert_filename(found_file_text, file_to_upload, driver, base_page, log)
 
         # If a file found, attempt download by locating the row and clicking download action inside it
         log.step("Step 5: Download the uploaded file before sign-out")
@@ -232,11 +185,11 @@ def test_public_bc_setting(authenticated_session, driver, base_page, login_page,
     Test to verify the 'Public BC' setting during software upload.
     Steps:
     1. Login as software uploader.
-    2. Navigate to product software list.
+    2. Navigate to a product software list.
     3. Upload a software package with 'Public BC' enabled.
     4. Verify the upload was successful via toast and list.
     5. Reopen the uploaded package and verify 'Public BC' is still enabled.
-    6. Sign out and verify redirection to login page.
+    6. Sign out and verify redirection to the login page.
     """
     log = setup_test_logging("upload_software_public_bc")
     log.test_start("test_upload_software_public_bc")
@@ -246,7 +199,7 @@ def test_public_bc_setting(authenticated_session, driver, base_page, login_page,
         # --- Step 1: Login ---
         # authenticated_session is a pytest fixture that logs in once per module
 
-        # --- Step 2: Navigate to product software list ---
+        # --- Step 2: Navigate to a product software list ---
         log.step("Step 2: Navigate to product software list")
         log.action(f"Opening software list for product: '{C.OMSD_ESG_410}'")
         software_page.navigate_to_product_software(C.OMSD_ESG_410)
@@ -300,11 +253,11 @@ def test_public_country_setting(authenticated_session, driver, base_page, login_
     Test to verify the 'Public Country' setting during software upload.
     Steps:
     1. Login as distribution manager.
-    2. Navigate to product software list.
+    2. Navigate to a product software list.
     3. Upload a software package with 'Public Country' enabled.
     4. Verify the upload was successful via toast and list.
     5. Reopen the uploaded package and verify 'Public Country' is still enabled.
-    6. Sign out and verify redirection to login page.
+    6. Sign out and verify redirection to the login page.
     """
     log = setup_test_logging("upload_software_public_country")
     log.test_start("test_upload_software_public_country")
@@ -314,7 +267,7 @@ def test_public_country_setting(authenticated_session, driver, base_page, login_
         # --- Step 1: Login ---
         # authenticated_session is a pytest fixture that logs in once per module
 
-        # --- Step 2: Navigate to product software list ---
+        # --- Step 2: Navigate to a product software list ---
         log.step("Step 2: Navigate to product software list")
         log.action(f"Opening software list for product: '{C.OMSD_ESG_410}'")
         software_page.navigate_to_product_software(C.OMSD_ESG_410)
