@@ -1,16 +1,15 @@
 import time
 import traceback
-from pathlib import Path
 
 import pytest
-from selenium.common.exceptions import TimeoutException, NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 
 # Import constants from the test configuration file using alias 'C' for brevity
-from omsd_automation.tests import test_config as C
+from tests import test_config as C
 from omsd_automation.utils.element_helper import fallback_find_uploaded_name
 from omsd_automation.utils.logger import setup_test_logging
-from omsd_automation.utils.upload_flow import build_upload_path, verify_toast, wait_for_uploaded_name_with_fallback, normalize_and_assert_filename, click_download_for_filename
+from omsd_automation.utils.upload_flow import build_upload_path, verify_toast, wait_for_uploaded_name_with_fallback, normalize_and_assert_filename
 
 
 @pytest.mark.parametrize("authenticated_session", ["software_uploader"], indirect=True)

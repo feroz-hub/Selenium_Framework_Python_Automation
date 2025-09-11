@@ -4,14 +4,19 @@ import os
 import sys
 from datetime import datetime
 from typing import Optional
+from pathlib import Path
 
-# Module-level state for single-run logfile / root config
+# Module-level state for a single-run logfile / root config
 _RUN_LOG_FILE: Optional[str] = None
 _ROOT_CONFIGURED: bool = False
 
+# Anchor default logs dir to the repository root (independent of CWD)
+_PROJECT_ROOT = Path(__file__).resolve().parents[2]
+_DEFAULT_LOG_DIR = _PROJECT_ROOT / "logs"
+
 
 def _ensure_root_logger(
-        log_dir: str = "logs",
+        log_dir: str = str(_DEFAULT_LOG_DIR),
         log_file_prefix: Optional[str] = None,
         file_level: int = logging.DEBUG,
         console_level: int = logging.INFO,
@@ -57,7 +62,7 @@ def _ensure_root_logger(
 
 def get_logger(
         name: str = "selenium-tests",
-        log_dir: str = "logs",
+        log_dir: str = str(_DEFAULT_LOG_DIR),
         console_level: int = logging.INFO,
         file_level: int = logging.DEBUG,
         log_file_prefix: Optional[str] = None,
@@ -134,13 +139,13 @@ class TestLogger:
         self.logger.warning(f"⏰ WAIT TIMEOUT: {wait_description} after {timeout}s")
 
 
-def setup_test_logging(test_name: str, log_dir: str = "logs") -> TestLogger:
+def setup_test_logging(test_name: str, log_dir: str = str(_DEFAULT_LOG_DIR)) -> TestLogger:
     """Convenience: returns a TestLogger for a test (logger name = test_<test_name>)."""
     logger = get_logger(name=f"test_{test_name}", log_dir=log_dir, log_file_prefix=test_name)
     return TestLogger(logger)
 
 
-def cleanup_old_logs(log_dir: str = "logs", days_to_keep: int = 7):
+def cleanup_old_logs(log_dir: str = str(_DEFAULT_LOG_DIR), days_to_keep: int = 7):
     """Remove old logs older than `days_to_keep` (keeps the latest)."""
     if not os.path.exists(log_dir):
         return

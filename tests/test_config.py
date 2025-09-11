@@ -8,12 +8,17 @@ used across the test suite for better maintainability and consistency.
 from pathlib import Path
 from typing import List
 
-# Test file paths
-TEST_BASE_DIR = Path(__file__).parent.parent
-UPLOAD_DIR = TEST_BASE_DIR / "uploads"
-DOWNLOAD_DIR = TEST_BASE_DIR / "downloads"
-SCREENSHOTS_DIR = TEST_BASE_DIR / "screenshots"
-LOGS_DIR = TEST_BASE_DIR / "logs"
+# Paths
+TEST_BASE_DIR = Path(__file__).parent.parent  # omsd_automation
+PROJECT_ROOT = Path(__file__).resolve().parents[2]  # repository root
+
+# Directories under the repository root
+UPLOAD_DIR = PROJECT_ROOT / "uploads"
+DOWNLOAD_DIR = PROJECT_ROOT / "downloads"
+SCREENSHOTS_DIR = PROJECT_ROOT / "screenshots"
+
+# Unified logs directory anchored at repo root
+LOGS_DIR = PROJECT_ROOT / "logs"
 
 # Product configuration
 OMSD_ESG_410 = "ESG-410"

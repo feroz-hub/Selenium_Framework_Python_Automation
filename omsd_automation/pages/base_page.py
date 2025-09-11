@@ -12,7 +12,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait, Select
 
-from omsd_automation.tests import test_config as C  # Import your config
 from omsd_automation.utils.config_reader import Config
 
 
@@ -245,13 +244,12 @@ class BasePage:
         raise TimeoutException(f"File containing '{filename_substring}' not found in {download_dir} within {timeout}s")
 
     def take_screenshot(self, step_name: str):
-        """Takes a screenshot and saves it in the configured screenshots folder."""
-        # timestamp = time.strftime("%Y%m%d_%H%M%S")
-        filename = f"{step_name}.png"
-        filepath = C.SCREENSHOTS_DIR / filename
-        self.driver.save_screenshot(str(filepath))
-        print(f"📸 Screenshot saved: {filepath}")
-        return filepath
+        """Take a screenshot organized under product/test case folders.
+        Returns the saved absolute path.
+        """
+        from omsd_automation.utils.screenshot import take_screenshot as _take
+        path = _take(self.driver, step_name)
+        return path
 
     # --- Misc utility methods ---
     def get_title(self):

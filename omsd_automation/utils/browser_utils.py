@@ -1,4 +1,4 @@
-from omsd_automation.tests import test_config as C
+from tests import test_config as C
 
 
 def get_download_prefs():

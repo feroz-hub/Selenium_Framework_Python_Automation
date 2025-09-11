@@ -138,6 +138,37 @@ These would require small code changes in config_reader.py to read from os.envir
   - Add config.yaml.example without secrets and document required keys.
   - If this repo is public, rotate any exposed credentials immediately.
 
+## Screenshots: how to use them
+
+Where screenshots are saved
+- Base directory: omsd_automation/screenshots (configured by omsd_automation/tests/test_config.py as SCREENSHOTS_DIR)
+- Organized automatically by product and test case when possible, e.g.:
+  - omsd_automation/screenshots/ESG-410/upload_software/ESG-410_upload_software_ST06-11_20250101_121314.png
+- If product or test case cannot be detected, screenshots are saved directly under omsd_automation/screenshots.
+
+Taking screenshots in tests (recommended)
+- Using BasePage (most convenient):
+  - path = base_page.take_screenshot("ST07-03_SelectedSoftware")
+  - log.screenshot(path)  # optional: record the saved path in the test log
+- BasePage.take_screenshot uses the organized saver and returns the absolute file path.
+
+Taking screenshots directly (advanced)
+- from omsd_automation.utils.screenshot import take_screenshot
+- Auto-detect product/test case from the call stack:
+  - take_screenshot(driver, "after_login")
+- Manually override product and/or test case:
+  - take_screenshot(driver, "grid_open", product="ESG-410", test_case="software_upload")
+- Add an extra subfolder for finer grouping (e.g., setup/teardown):
+  - take_screenshot(driver, "before_toggle", extra_subfolder="setup")
+
+Filename format
+- <product>_<test_case>_<step>_<timestamp>.png (prefixes omitted if unknown)
+- Invalid characters are sanitized. If step includes .png, it is stripped.
+
+Tips
+- Pair screenshots with logger entries for easier triage: log.screenshot(path)
+- Look in the run log (logs/testrun_*.log) for the exact saved path — the utility prints it as well.
+
 ## Troubleshooting
 - ChromeDriver version mismatch on Windows
   - Update chrome_driver_path to point to a driver matching your installed Chrome version.

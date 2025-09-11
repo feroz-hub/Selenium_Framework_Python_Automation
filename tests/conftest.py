@@ -8,10 +8,9 @@ from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
 from webdriver_manager.microsoft import EdgeChromiumDriverManager
 
-from .utils.browser_utils import get_download_prefs
-from .utils.config_reader import Config
-from .utils.logger import get_logger
-from omsd_automation.tests import test_config as C  # import dirs (UPLOAD_DIR, DOWNLOAD_DIR)
+from omsd_automation.utils.config_reader import Config
+from omsd_automation.utils.logger import get_logger
+from tests import test_config as C  # import dirs (UPLOAD_DIR, DOWNLOAD_DIR)
 from omsd_automation.utils.login_utils import LoginUtils
 from omsd_automation.utils.logout_utils import LogoutUtils
 # Import page objects

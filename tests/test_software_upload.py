@@ -1,7 +1,7 @@
 import pytest
 import hashlib
 from selenium.webdriver.common.by import By
-from omsd_automation.tests import test_config as C
+from tests import test_config as C
 from omsd_automation.utils.config_reader import Config
 from omsd_automation.utils.logger import setup_test_logging
 
