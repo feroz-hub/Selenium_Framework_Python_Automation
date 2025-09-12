@@ -34,3 +34,8 @@ tests:
       expected: "success"
 upload_files:
   esg_410: "omsd_automation/uploads/ESG-410_v01.00.00.00-New_11"
+db:
+  server: "omsd-sqlsv-stg3.database.windows.net"
+  name: "omsd-sqlsv-stg3"
+  username: "omsdSqlAdmin"
+  password: "8w$Tm%-7ucNxE"

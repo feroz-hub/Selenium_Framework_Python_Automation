@@ -18,7 +18,7 @@ class HomePage(BasePage):
         self.click(self.USER_PROFILE)
 
     def sign_out(self):
-        """Sign out of the application and return LoginPage."""
+        """Sign out of the application and return the LoginPage."""
         self.open_user_menu()
         self.click(self.SIGN_OUT_LINK)
 
