@@ -10,13 +10,13 @@ from typing import List
 
 # Paths
 TEST_BASE_DIR = Path(__file__).parent.parent  # omsd_automation
-PROJECT_ROOT = Path(__file__).resolve().parents[2]  # repository root
+PROJECT_ROOT = Path(__file__).resolve().parents[1]  # repository root
 
 # Directories under the repository root
 UPLOAD_DIR = PROJECT_ROOT / "uploads"
 DOWNLOAD_DIR = PROJECT_ROOT / "downloads"
 SCREENSHOTS_DIR = PROJECT_ROOT / "screenshots"
-
+MANUALS_DIR = PROJECT_ROOT / "manuals"
 # Unified logs directory anchored at repo root
 LOGS_DIR = PROJECT_ROOT / "logs"
 
@@ -27,7 +27,7 @@ TEST_PRODUCTS: List[str] = ["ESG-410", "ESG-420"]
 
 # Test file configuration
 TEST_FILE_NAME = "ESG-410_v01.00.00.00-New_11"
-
+TEST_MANUAL_NAME="ESG-410_1.pdf"
 # Timeout configuration (in seconds)
 DEFAULT_TIMEOUT = 15
 SHORT_TIMEOUT = 5

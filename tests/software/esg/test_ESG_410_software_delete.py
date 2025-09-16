@@ -5,7 +5,7 @@ from tests import test_config as C
 from omsd_automation.utils.logger import setup_test_logging
 
 
-@pytest.mark.smoke
+@pytest.mark.parametrize("authenticated_session", ["software_uploader"], indirect=True)
 def test_delete_software(authenticated_session, driver, base_page, login_page, software_page, home_page):
     log = setup_test_logging("delete_software")
     log.test_start("test_delete_software")

@@ -11,6 +11,13 @@ environments:
       distribution_manager:
         username: "c810ef29.olympusssa.onmicrosoft.com@amer.teams.ms"
         password: "Sp0&xKgS*p4DFW"
+      end_user:
+        username: "gorantla.srikanth@hcltech.com"
+        password: "@Srikanth6706"
+      device_update_executor:
+        username: "ferozebasha.s@hcltech.com"
+        password: "@Feroze123"
+
 
   prod:
     base_url: "https://softwaredelivery.olympusmedical.com"
@@ -22,7 +29,7 @@ environments:
         username: "prod_manager"
         password: "prod_manager_password"
 base_url: "https://softwaredelivery-stg3.olympusmedical.com"
-browser: "chrome" # options : chrome, edge, safari, firefox
+browser: "chrome" # options: chrome, edge, safari, firefox
 headless: false
 implicit_wait: 5
 explicit_wait: 10

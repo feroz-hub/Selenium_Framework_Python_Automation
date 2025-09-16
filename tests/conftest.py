@@ -8,19 +8,23 @@ from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
 from webdriver_manager.microsoft import EdgeChromiumDriverManager
 
+from omsd_automation.pages.software.country_for_manual_release import CountryForManualReleasePage
 from omsd_automation.utils.config_reader import Config
-from omsd_automation.utils.logger import get_logger
+from omsd_automation.utils.logger import get_logger, reset_logger_state
+from omsd_automation.utils.upload_flow import UploadFlow
 from tests import test_config as C  # import dirs (UPLOAD_DIR, DOWNLOAD_DIR)
 from omsd_automation.utils.login_utils import LoginUtils
 from omsd_automation.utils.logout_utils import LogoutUtils
 # Import page objects
 from omsd_automation.pages.base.base_page import BasePage
 from omsd_automation.pages.login_page import LoginPage
-from omsd_automation.pages.software_page import SoftwarePage
-from omsd_automation.pages.upload_page import UploadPage
+from omsd_automation.pages.software.software_page import SoftwarePage
+from omsd_automation.pages.software.upload_page import UploadPage
 from omsd_automation.pages.home_page import HomePage
 from omsd_automation.utils.logger import setup_test_logging
 
+# Ensure a clean logging state at the very start of the test session
+reset_logger_state()
 logger = get_logger(__name__)
 
 
@@ -78,7 +82,7 @@ def driver():
             geckodriver_path = r"path_to_your_local_geckodriver.exe"
             service = FirefoxService(executable_path=geckodriver_path)
 
-        driver = webdriver.Firefox(service=service, options=options, firefox_profile=profile)
+        driver = webdriver.Firefox(service=service, options=options)
 
     elif browser == "edge":
         options = webdriver.EdgeOptions()
@@ -148,7 +152,19 @@ def upload_page(driver):
 def home_page(driver):
     return HomePage(driver)
 
+@pytest.fixture
+def country_page(driver):
+    return CountryForManualReleasePage(driver, setup_test_logging("country_page"))
 
+@pytest.fixture
+def log():
+    return setup_test_logging()
+
+# Fixture for UploadFlow
+@pytest.fixture
+def upload_flow(software_page,base_page, upload_page, driver):
+    log = setup_test_logging()
+    return UploadFlow(software_page,base_page, upload_page, driver, log)
 @pytest.fixture(scope="function")
 def authenticated_session(driver, request):
     """
@@ -170,5 +186,5 @@ def authenticated_session(driver, request):
     home_page = HomePage(driver)
     LoginUtils.login_as_role(login_page, base_page, log, driver, role)
     yield home_page
-    # Logout after test
+    # Logout after the test
     LogoutUtils.sign_out_user(home_page, base_page, login_page, log, driver)

@@ -49,6 +49,24 @@ class BasePage:
         except ElementClickInterceptedException:
             # Fallback: JS click
             self.driver.execute_script("arguments[0].click();", el)
+
+    # base_page.py
+    def safe_click(self, locator, timeout=10):
+        """
+        Wait until an element is clickable and perform click.
+        Falls back to JS click if Selenium click fails.
+        """
+        el = WebDriverWait(self.driver, timeout).until(
+            EC.element_to_be_clickable(locator)
+        )
+        try:
+            self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", el)
+            el.click()
+        except Exception:
+            # JS fallback in case of overlays / hidden state
+            self.driver.execute_script("arguments[0].click();", el)
+        return el
+
     def find_element(self, locator):
         """Find a single element."""
         return WebDriverWait(self.driver, self.timeout).until(EC.presence_of_element_located(locator))

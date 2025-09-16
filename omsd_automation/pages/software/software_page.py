@@ -1,17 +1,19 @@
 """
-Software Page Object Model for Olympus Medical Software Delivery system.
+Software Page Object Model for an Olympus Medical Software Delivery system.
 
 This module provides a comprehensive page object for software management functionality,
 including product navigation, software list operations, and file upload capabilities.
 """
 import time
 
-from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
 
 from omsd_automation.pages.base.base_page import BasePage
+
+
 # from omsd_automation.utils.logger import get_logger, TestLogger
 
 
@@ -29,7 +31,7 @@ class SoftwarePage(BasePage):
     UPLOAD_POPUP_HEADER = (By.ID, "addHeader")
     FILE_INPUT = (By.ID, "packageFileInput")
     SUBMIT_BTN = (By.XPATH, "//input[@type='submit' or @value='Submit' or @value='Upload']")
-    
+
     # Template locators for dynamic element finding
     SOFTWARE_LIST_BTN_TEMPLATE = "//h5[text()='{}']/following-sibling::input[@value='Software List']"
     PRODUCT_HEADER_TEMPLATE = "//h5[text()='{}']"
@@ -49,12 +51,27 @@ class SoftwarePage(BasePage):
         self.open_software_list(product_name)
         time.sleep(2)  # Allow time for page transition
 
+    def navigate_and_verify(self, product_name: str, log) -> None:
+        """
+        Navigate to the software list for a given product
+        and verify successful navigation.
+        """
+        log.step("Navigate to product software list")
+        log.action(f"Opening software list for product: '{product_name}'")
+
+        self.navigate_to_product_software(product_name)
+
+        log.verification(
+            f"Successfully navigated to the software list for '{product_name}'", True
+        )
+        log.page_info(self.driver.title, self.driver.current_url)
+
     # Debug locators for troubleshooting
     ALL_PRODUCTS_LOCATOR = (By.XPATH, "//h5")
 
     def __init__(self, driver: WebDriver, logger) -> None:
         """
-        Initialize SoftwarePage with enhanced logging.
+        Initialize the SoftwarePage with enhanced logging.
         
         Args:
             driver: WebDriver instance for browser automation
@@ -64,19 +81,20 @@ class SoftwarePage(BasePage):
 
     def open_software_list(self, product_name: str, timeout: int = 15) -> None:
         """
-        Open software list for a specific product with enhanced error handling.
+        Open the software list for a specific product with enhanced error handling.
 
         Args:
-            product_name: The name of the product to open software list for
+            product_name: The name of the product to open a software list for
             timeout: Maximum time to wait for elements in seconds
             
         Raises:
-            Exception: If product is not found or software list button is not available
+            Exception: If the product is not found or the software list button is not available
             
         Example:
             >>> software_page.open_software_list("ESG-410")
         """
         self.logger.action(f"Opening software list for product: {product_name}")
+        self.wait_for_element_to_be_visible((By.XPATH, "//h5"), timeout=max(15, timeout))
 
         # First, verify the product exists
         product_locator = (By.XPATH, self.PRODUCT_HEADER_TEMPLATE.format(product_name))
@@ -114,13 +132,13 @@ class SoftwarePage(BasePage):
 
     def is_software_list_opened(self, timeout: int = 10) -> bool:
         """
-        Check if software list is opened by verifying popup header visibility.
+        Check if a software list is opened by verifying popup header visibility.
 
         Args:
-            timeout: Maximum time to wait for element in seconds
+            timeout: Maximum time to wait for an element in seconds
 
         Returns:
-            True if software list is opened, False otherwise
+            True if a software list is opened, False otherwise
             
         Example:
             >>> if software_page.is_software_list_opened():
@@ -360,32 +378,32 @@ class SoftwarePage(BasePage):
     def upload_software_complete(self, file_path, timeout=10):
         """Complete software upload process with file selection and submission."""
         self.logger.action(f"Starting complete upload process for file: {file_path}")
-        
+
         try:
             # Wait for file input to be available
             self.logger.wait_start("Waiting for file input to be available", timeout)
             file_input = self.wait_for_element_to_be_visible(self.FILE_INPUT, timeout=timeout)
             self.logger.element_found("File input field", str(self.FILE_INPUT))
-            
+
             # Upload the file
             self.logger.action(f"Uploading file: {file_path}")
             file_input.send_keys(file_path)
             self.logger.action("File uploaded successfully")
-            
+
             # Wait for submit button and click it
             self.logger.wait_start("Waiting for submit button to be clickable", timeout)
             submit_button = self.wait_for_element_to_be_clickable(self.SUBMIT_BTN, timeout=timeout)
             self.logger.element_found("Submit button", str(self.SUBMIT_BTN))
-            
+
             # Click submit
             self.logger.action("Clicking submit button")
             submit_button.click()
             self.logger.action("Submit button clicked successfully")
-            
+
             # Wait for upload to complete (you may need to adjust this based on your app)
             time.sleep(2)
             self.logger.wait_success("Upload process completed")
-            
+
         except TimeoutException as e:
             self.logger.error(f"Upload process failed: {e}")
             screenshot_path = self.take_screenshot("upload_failed.png")
