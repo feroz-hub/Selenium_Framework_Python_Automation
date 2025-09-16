@@ -20,13 +20,25 @@ class BasePage:
 
     def __init__(self, driver, timeout=None):
         self.driver = driver
+        self.wait = WebDriverWait(driver, 20)
+
         # prefer config implicit wait if available
         self.timeout = timeout if timeout is not None else Config.get("implicit_wait", 5)
 
+    TOAST = (By.CSS_SELECTOR, "#toast-container .toast")
+
+    def wait_for_toast_to_disappear(self, timeout=10):
+        try:
+            self.wait_for_element_to_disappear(self.TOAST, timeout=timeout)
+        except Exception:
+            pass
     # --- Find / basic wrappers ---
     def find(self, locator):
         """Find a single element."""
         return WebDriverWait(self.driver, self.timeout).until(EC.presence_of_element_located(locator))
+
+    def refresh_page(self):
+        self.driver.refresh()
 
     def wait_for_seconds(self, seconds):
         time.sleep(seconds)

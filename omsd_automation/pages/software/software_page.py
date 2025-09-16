@@ -31,7 +31,7 @@ class SoftwarePage(BasePage):
     UPLOAD_POPUP_HEADER = (By.ID, "addHeader")
     FILE_INPUT = (By.ID, "packageFileInput")
     SUBMIT_BTN = (By.XPATH, "//input[@type='submit' or @value='Submit' or @value='Upload']")
-
+    BTN_BACK= (By.XPATH, "//input[@type='button' or @value='Back']")
     # Template locators for dynamic element finding
     SOFTWARE_LIST_BTN_TEMPLATE = "//h5[text()='{}']/following-sibling::input[@value='Software List']"
     PRODUCT_HEADER_TEMPLATE = "//h5[text()='{}']"
@@ -86,15 +86,15 @@ class SoftwarePage(BasePage):
         Args:
             product_name: The name of the product to open a software list for
             timeout: Maximum time to wait for elements in seconds
-            
+
         Raises:
             Exception: If the product is not found or the software list button is not available
-            
+
         Example:
             >>> software_page.open_software_list("ESG-410")
         """
         self.logger.action(f"Opening software list for product: {product_name}")
-        self.wait_for_element_to_be_visible((By.XPATH, "//h5"), timeout=max(15, timeout))
+        self.wait_for_element_to_be_visible((By.XPATH, "//h5"), timeout=max(30, timeout))
 
         # First, verify the product exists
         product_locator = (By.XPATH, self.PRODUCT_HEADER_TEMPLATE.format(product_name))
@@ -130,6 +130,118 @@ class SoftwarePage(BasePage):
             self._log_available_buttons_for_product(product_name)
             raise Exception(f"Software List button not found for product '{product_name}'")
 
+    def open_software_list_revert(self, product_name: str, timeout: int = 15) -> None:
+        self.logger.action(f"Opening software list for product: {product_name}")
+
+        def _wait_overlays():
+            # Wait for the known preloader and toast to be gone to avoid being blocked
+            try:
+                self.wait_for_preloader_to_disappear(timeout=10)
+            except Exception:
+                pass
+            try:
+                self.wait_for_element_to_disappear(self.TOAST, timeout=5)
+            except Exception:
+                pass
+
+        product_locator = (By.XPATH, self.PRODUCT_HEADER_TEMPLATE.format(product_name))
+        software_list_locator = (By.XPATH, self.SOFTWARE_LIST_BTN_TEMPLATE.format(product_name))
+
+        last_error = None
+        for attempt in range(2):  # try once, refresh, try again
+            _wait_overlays()
+            try:
+                # Wait specifically for this product header, not generic //h5
+                self.logger.wait_start(f"Looking for product header: {product_name}", timeout)
+                product_element = self.wait_for_element_to_be_visible(product_locator, timeout=timeout)
+                self.logger.element_found(f"Product: {product_element.text}", str(product_locator))
+
+                # Now the button
+                self.logger.wait_start("Looking for Software List button", timeout)
+                button_element = self.wait_for_element_to_be_visible(software_list_locator, timeout=timeout)
+                self.logger.element_found(
+                    f"Software List button (enabled: {button_element.is_enabled()})",
+                    str(software_list_locator),
+                )
+
+                # Scroll + click
+                self.scroll_into_view(software_list_locator)
+                self.click_when_ready(software_list_locator, timeout=timeout)
+                time.sleep(2)
+                self.logger.action("Software List button clicked successfully")
+                return
+            except TimeoutException as e:
+                last_error = e
+                self.logger.warning(f"Attempt {attempt + 1} failed to open software list: {e}")
+                if attempt == 0:
+                    self.logger.action("Refreshing page and retrying...")
+                    try:
+                        self.driver.refresh()
+                        time.sleep(2)
+                    except Exception:
+                        pass
+
+        # Diagnostics
+        self._log_available_products()
+        self._log_available_buttons_for_product(product_name)
+        self._debug_page_state()
+        raise Exception(f"Software List button not found for product '{product_name}'. Last error: {last_error}")
+
+    POSSIBLE_BACK = [
+        (By.ID, "btnBack"),
+        (By.XPATH, "//input[contains(@value,'Back')]")
+    ]
+
+    def ensure_on_products_list(self, timeout=10):
+        # If there is no product header at all but we see edit context, go back
+        try:
+            if not self.is_visible((By.XPATH, "//h5"), timeout=2):
+                for loc in self.POSSIBLE_BACK:
+                    if self.is_visible(loc, timeout=2):
+                        try:
+                            self.scroll_into_view(loc)
+                            self.click_when_ready(loc, timeout=5)
+                            time.sleep(1)
+                            break
+                        except Exception:
+                            pass
+        except Exception:
+            pass
+    # def open_software_list_revert(self, product_name: str, timeout: int = 35) -> None:
+    #
+    #     # First, verify the product exists
+    #     product_locator = (By.XPATH, self.PRODUCT_HEADER_TEMPLATE.format(product_name))
+    #     try:
+    #         self.logger.wait_start(f"Looking for product: {product_name}", timeout)
+    #         product_element = self.wait_for_element_to_be_visible(product_locator, timeout=timeout)
+    #         self.logger.element_found(f"Product: {product_element.text}", str(product_locator))
+    #     except TimeoutException:
+    #         self.logger.element_not_found(f"Product: {product_name}", str(product_locator))
+    #         self._log_available_products()
+    #         raise Exception(f"Product '{product_name}' not found on the page")
+    #
+    #     # Find and click the software list button
+    #     software_list_locator = (By.XPATH, self.SOFTWARE_LIST_BTN_TEMPLATE.format(product_name))
+    #     try:
+    #         self.logger.wait_start("Looking for Software List button", timeout)
+    #         button_element = self.wait_for_element_to_be_visible(software_list_locator, timeout=timeout)
+    #         self.logger.element_found(f"Software List button (enabled: {button_element.is_enabled()})",
+    #                                   str(software_list_locator))
+    #
+    #         # Scroll into view and click
+    #         self.scroll_into_view(software_list_locator)
+    #         self.click_when_ready(software_list_locator, timeout=timeout)
+    #         self.logger.action("Software List button clicked successfully")
+    #
+    #         # Wait for page transition
+    #         time.sleep(2)
+    #         self.logger.wait_success("Page transition after clicking Software List")
+    #
+    #     except TimeoutException:
+    #         self.logger.element_not_found(f"Software List button for product: {product_name}",
+    #                                       str(software_list_locator))
+    #         self._log_available_buttons_for_product(product_name)
+    #         raise Exception(f"Software List button not found for product '{product_name}'")
     def is_software_list_opened(self, timeout: int = 10) -> bool:
         """
         Check if a software list is opened by verifying popup header visibility.
@@ -172,6 +284,11 @@ class SoftwarePage(BasePage):
             self._debug_page_state()
 
         return is_opened
+    def click_back_to_software_list(self, timeout=15):
+        """Click the back to software list button with enhanced error handling."""
+        self.logger.action("Attempting to click Back to Software List button")
+        submit_button = self.wait_for_element_to_be_clickable(self.BTN_BACK, timeout=timeout)
+        submit_button.click()
 
     def click_upload_software(self, timeout=15):
         """Click the upload software button with enhanced error handling."""

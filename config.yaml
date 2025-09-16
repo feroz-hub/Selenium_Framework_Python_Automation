@@ -11,12 +11,18 @@ environments:
       distribution_manager:
         username: "c810ef29.olympusssa.onmicrosoft.com@amer.teams.ms"
         password: "Sp0&xKgS*p4DFW"
-      end_user:
+      distribution_manager_without_permission:
         username: "gorantla.srikanth@hcltech.com"
         password: "@Srikanth6706"
-      device_update_executor:
+      device_update_executor_without_permission:
         username: "ferozebasha.s@hcltech.com"
         password: "@Feroze123"
+      device_update_executor:
+        username: "26ba30ee.olympusssa.onmicrosoft.com@amer.teams.ms "
+        password: "6rPB7vqX@"
+      customer:
+        username: "6ee6285e.olympusssa.onmicrosoft.com@amer.teams.ms"
+        password: "BX6JHJ2v@"
 
 
   prod:

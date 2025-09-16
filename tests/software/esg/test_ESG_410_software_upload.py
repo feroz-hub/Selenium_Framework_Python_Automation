@@ -4,6 +4,7 @@ import traceback
 import pytest
 from selenium.webdriver.common.by import By
 
+from omsd_automation.pages.software.software_check import SoftwareCheckPage
 from omsd_automation.utils.element_helper import fallback_find_uploaded_name
 from omsd_automation.utils.logger import setup_test_logging
 from omsd_automation.utils.login_utils import LoginUtils
@@ -121,7 +122,7 @@ def test_public_bc_setting(authenticated_session, upload_flow, upload_page, base
         log.test_end("bc_setting_updated", success=test_passed)
 
 
-@pytest.mark.parametrize("authenticated_session", ["distribution_manager"], indirect=True)
+@pytest.mark.parametrize("authenticated_session", ["end_user"], indirect=True)
 def test_public_country_setting(authenticated_session, upload_flow, base_page, login_page, software_page, upload_page,
                                 home_page):
     """
@@ -156,6 +157,15 @@ def test_public_country_setting(authenticated_session, upload_flow, base_page, l
         # Step 5: Verify Update via Toast Message (common helper)
         upload_flow.verify_toast("The software settings have been saved.", C.DEFAULT_TIMEOUT)
         base_page.take_screenshot("ST07-04_Deleted")
+        base_page.wait_for_toast_to_disappear()
+        #base_page.refresh_page()
+        #software_page.click_back_to_software_list()
+
+        upload_flow.navigate_to_product_revert(C.OMSD_ESG_410, "bc_setting_updated")
+
+        upload_flow.select_uploaded_file(file_to_update, "ST07-03")
+        upload_page.update_country_setting()
+        upload_flow.verify_toast("The software settings have been saved.", C.DEFAULT_TIMEOUT)
         # # Step 7: Sign Out
         # SignOut is happened in pytest fixture
         test_passed = True
@@ -357,7 +367,77 @@ def test_public_country_setting_multi_login(roles,base_page, driver,login_page, 
         raise
     finally:
         log.test_end("bc_setting_multi_login_updated", success=test_passed)
+@pytest.mark.parametrize("roles", [("end_user", "distribution_manager")])
+def test_public_country_setting_multi_user(roles,driver, upload_flow, base_page, login_page, software_page, upload_page,
+                                home_page):
+    """
+    Test to verify the 'Public Country' setting during software upload.
+    Steps:
+    1. Login as distribution manager.
+    2. Navigate to a product software list.
+    3. Upload a software package with 'Public Country' enabled.
+    4. Verify the upload was successful via toast and list.
+    5. Reopen the uploaded package and verify 'Public Country' is still enabled.
+    6. Sign out and verify redirection to the login page.
+    """
+    # 1) Login as end_user
+    log = setup_test_logging("upload_software_public_country")
 
+
+    log.test_start("test_upload_software_public_country")
+    test_passed = False
+    file_to_update = "ESG-410_v01.00.00.00-Hema"
+    try:
+        # --- Step 1: Login ---
+        LoginUtils.login_as_role(login_page, base_page, log, driver, roles[0])
+
+        # --- Step 2: Navigate to a product software list ---
+        log.step("Step 2: Navigate to product software list")
+        upload_flow.navigate_to_product(C.OMSD_ESG_410, "bc_setting_updated")
+        # --- Step 3: Select Uploaded software ---
+        log.step("Step 3: Select the uploaded software to change Public Country setting")
+        upload_flow.select_uploaded_file(file_to_update, "ST07-03")
+        log.action(f"Looking for uploaded software file: {file_to_update}")
+        # Step 4: Change Public Country setting
+        log.step("Step 4: Change Public Country setting")
+        upload_page.update_country_setting()
+        base_page.wait_for_seconds(2)
+        # Step 5: Verify Update via Toast Message (common helper)
+        upload_flow.verify_toast("The software settings have been saved.", C.DEFAULT_TIMEOUT)
+        base_page.take_screenshot("ST07-04_Deleted")
+        base_page.wait_for_toast_to_disappear()
+        #base_page.refresh_page()
+        #software_page.click_back_to_software_list()
+
+        upload_flow.navigate_to_product_revert(C.OMSD_ESG_410, "bc_setting_updated")
+
+        upload_flow.select_uploaded_file(file_to_update, "ST07-03")
+        upload_page.update_country_setting()
+        upload_flow.verify_toast("The software settings have been saved.", C.DEFAULT_TIMEOUT)
+        # # Step 7: Sign Out
+        LogoutUtils.sign_out_user(home_page, base_page, login_page, log, driver)
+
+        LoginUtils.login_as_role(login_page, base_page, log, driver, roles[1])
+        upload_flow.navigate_to_product(C.OMSD_ESG_410, "bc_setting_updated")
+        # --- Step 3: Select Uploaded software ---
+        log.step("Step 3: Select the uploaded software to change Public Country setting")
+        upload_flow.select_uploaded_file(file_to_update, "ST07-03")
+        log.action(f"Looking for uploaded software file: {file_to_update}")
+        # Step 4: Change Public Country setting
+        log.step("Step 4: Change Public Country setting")
+        upload_page.update_country_setting()
+        base_page.wait_for_seconds(2)
+        # Step 5: Verify Update via Toast Message (common helper)
+        upload_flow.verify_toast("The software settings have been saved.", C.DEFAULT_TIMEOUT)
+        base_page.take_screenshot("ST07-04_Deleted")
+        LogoutUtils.sign_out_user(home_page, base_page, login_page, log, driver)
+        test_passed = True
+    except Exception as e:
+        log.error(f"Exception occurred during test: {e}")
+        base_page.take_screenshot("ST07_Error")
+        raise
+    finally:
+        log.test_end("bc_setting_updated", success=test_passed)
 @pytest.mark.parametrize("authenticated_session", ["distribution_manager"], indirect=True)
 def test_manual_setting(authenticated_session, upload_flow, upload_page, base_page, country_page):
     log = setup_test_logging("update_manual_setting")
@@ -380,5 +460,32 @@ def test_manual_setting(authenticated_session, upload_flow, upload_page, base_pa
         raise
     finally:
         log.test_end("test_update_manual_setting", success=test_passed)
+@pytest.mark.parametrize("authenticated_session", ["customer"], indirect=True)
+def test_customer_setting(authenticated_session, upload_flow, upload_page, base_page, country_page,search_page):
+    log = setup_test_logging("update_manual_setting")
+    file_to_update = "ESG-410_v01.00.00.00-Hema"
+    file_to_upload=C.TEST_MANUAL_NAME
+    test_passed= False
+    upload_flow.navigate_to_product(C.OMSD_ESG_410, "ST06-11")
+    search_page.search(123456)
+    base_page.wait_for_seconds(3)
+    search_page.click_download_button_by_software(file_to_update)
+    test_passed = True
+
+
+# @pytest.mark.parametrize("authenticated_session", ["end_user"], indirect=True)
+# def test_public_country_setting(authenticated_session, upload_flow, software_check_page ):
+#     log = setup_test_logging("update_manual_setting")
+#     # Step 3: Select software package
+#     software_check_page.select_software("ESG-410_v01.00.00.00-Hema")
+#
+#     # Step 4: Enable Public Country setting
+#     software_check_page.toggle_public_country_setting(enable=True)
+#
+#     # Step 5: Reopen and revert Public Country setting
+#     software_check_page.reopen_software("ESG-410_v01.00.00.00-Hema")
+#     software_check_page.toggle_public_country_setting(enable=False)
+
+
 
 

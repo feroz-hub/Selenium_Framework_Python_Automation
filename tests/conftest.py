@@ -9,6 +9,8 @@ from webdriver_manager.firefox import GeckoDriverManager
 from webdriver_manager.microsoft import EdgeChromiumDriverManager
 
 from omsd_automation.pages.software.country_for_manual_release import CountryForManualReleasePage
+from omsd_automation.pages.software.search_device_page import SearchDevicePage
+from omsd_automation.pages.software.software_check import SoftwareCheckPage
 from omsd_automation.utils.config_reader import Config
 from omsd_automation.utils.logger import get_logger, reset_logger_state
 from omsd_automation.utils.upload_flow import UploadFlow
@@ -131,12 +133,16 @@ def driver():
 @pytest.fixture
 def base_page(driver):
     return BasePage(driver)
-
+@pytest.fixture
+def software_check_page(driver):
+    return SoftwareCheckPage(driver)
 
 @pytest.fixture
 def login_page(driver):
     return LoginPage(driver)
-
+@pytest.fixture
+def search_page(driver):
+    return SearchDevicePage(driver)
 
 @pytest.fixture
 def software_page(driver):

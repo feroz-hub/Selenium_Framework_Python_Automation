@@ -21,9 +21,19 @@ class UploadFlow:
     def navigate_to_product(self, product_name: str,screenshot_name: str):
         self.log.step("Navigate to product software list")
         self.log.action(f"Opening software list for product: '{product_name}'")
-
         self.software_page.open_software_list(product_name)
-
+        self.log.verification(
+            f"Successfully navigated to the software list for '{product_name}'", True
+        )
+        self.base_page.wait_for_seconds(3)
+        self.base_page.take_screenshot(screenshot_name)
+        self.log.page_info(self.driver.title, self.driver.current_url)
+    def navigate_to_product_revert(self, product_name: str,screenshot_name: str):
+        self.log.step("Navigate to product software list")
+        self.log.action(f"Opening software list for product: '{product_name}'")
+        self.base_page.wait_for_preloader_to_disappear()
+        self.software_page.ensure_on_products_list()
+        self.software_page.open_software_list_revert(product_name)
         self.log.verification(
             f"Successfully navigated to the software list for '{product_name}'", True
         )
@@ -88,6 +98,12 @@ class UploadFlow:
                 fh.write(self.driver.page_source)
             self.log.error(f"Toast verification failed: {e}")
             raise
+
+    def wait_for_toast_to_disappear(self, timeout=10):
+        try:
+            self.wait_for_element_to_disappear(self.TOAST, timeout=timeout)
+        except Exception:
+            pass
     def wait_for_uploaded_name_with_fallback(self, expected_name: str, list_timeout: int,
                                              fallback_func) -> str:
         """
