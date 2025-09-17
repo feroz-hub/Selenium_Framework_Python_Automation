@@ -38,7 +38,7 @@ class CountryForManualReleasePage(BasePage):
     def confirm_country_selection(self):
         """Click the country confirmation button."""
         self.log.action("Clicking the 'Confirm Country' button.")
-        self.click(self.BTN_COUNTRY)
+        self.click(self.COUNTRY_BUTTON)
 
     def click_ok_button(self):
         """Click the OK button in the country selection dialog."""
