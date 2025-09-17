@@ -194,7 +194,7 @@ def test_public_country_setting_multi_user(roles,driver, upload_flow, base_page,
 
 @pytest.mark.parametrize("roles", [("distribution_manager_without_permission", "distribution_manager")])
 def test_public_manual_settings_multi_user(roles,driver, upload_flow, base_page, login_page, software_page, upload_page,
-                                home_page):
+                                home_page,edit_software_release_page):
     """
     Test to verify the 'Public Country' setting during software upload.
     Steps:
@@ -225,6 +225,10 @@ def test_public_manual_settings_multi_user(roles,driver, upload_flow, base_page,
         upload_flow.select_uploaded_file(file_to_update, "ST07-03")
         log.action(f"Looking for uploaded software file: {file_to_update}")
         file_path = upload_flow.build_upload_path(C.MANUALS_DIR, file_to_upload, log)
+
+        time.sleep(3)
+        # edit_software_release_page.click_add_button()
+        edit_software_release_page.upload_pdf(file_path)
         test_passed = True
         LogoutUtils.sign_out_user(home_page, base_page, login_page, log, driver)
     except Exception as e:
@@ -233,29 +237,6 @@ def test_public_manual_settings_multi_user(roles,driver, upload_flow, base_page,
         raise
     finally:
         log.test_end("bc_setting_updated", success=test_passed)
-@pytest.mark.parametrize("authenticated_session", ["distribution_manager_without_permission"], indirect=True)
-def test_manual_setting(authenticated_session, upload_flow, upload_page, base_page, country_page,edit_software_release_page):
-    log = setup_test_logging("update_manual_setting")
-    file_to_update = "ESG-410_v01.00.00.00-Hema"
-    file_to_upload=C.TEST_MANUAL_NAME
-    test_passed= False
-
-    try:
-        log.test_start("test_update_manual_setting")
-        upload_flow.navigate_to_product(C.OMSD_ESG_410, "ST06-11")
-        upload_flow.select_uploaded_file(file_to_update, "ST07-03")
-        file_path=upload_flow.build_upload_path(C.MANUALS_DIR, file_to_upload,log)
-        base_page.scroll_into_view()
-        time.sleep(3)
-        #edit_software_release_page.click_add_button()
-        edit_software_release_page.upload_pdf(file_path)
-        test_passed = True
-    except Exception as e:
-        log.error(f"Exception occurred during multi-login test: {e}")
-        base_page.take_screenshot("ST07_MultiLogin_Error")
-        raise
-    finally:
-        log.test_end("test_update_manual_setting", success=test_passed)
 
 @pytest.mark.parametrize("authenticated_session", ["customer"], indirect=True)
 def test_customer_setting(authenticated_session, upload_flow, upload_page, base_page, country_page,search_page):
