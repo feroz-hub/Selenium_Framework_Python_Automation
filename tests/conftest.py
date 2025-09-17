@@ -171,26 +171,33 @@ def log():
 def upload_flow(software_page,base_page, upload_page, driver):
     log = setup_test_logging()
     return UploadFlow(software_page,base_page, upload_page, driver, log)
+
+
 @pytest.fixture(scope="function")
 def authenticated_session(driver, request):
     """
-    Pytest fixture to handle login before a test and logout after the test.
-    Use like:
-    @pytest.mark.parametrize("authenticated_session", ["software_uploader"], indirect=True)
-    Parameters:
-    - driver: WebDriver instance
-    - login_page: Page object for login operations
-    - base_page: Page object for base operations
-    - home_page: Page object for home page operations
-    - log: Logger object
+    Pytest fixture to handle login before a test and logout after.
+    Usage: @pytest.mark.parametrize("authenticated_session", ["software_uploader"], indirect=True)
+
+    Args:
+        driver: WebDriver instance
+        request: Pytest request object for accessing test parameters
+
+    Yields:
+        HomePage: Authenticated home page object
     """
-    # Login before test
-    role = getattr(request, "param", "software_uploader")
+    role = request.param if hasattr(request, "param") else "software_uploader"
     log = setup_test_logging(f"login_session[{role}]")
+
+    # Initialize page objects
     login_page = LoginPage(driver)
     base_page = BasePage(driver)
     home_page = HomePage(driver)
+
+    # Perform login
     LoginUtils.login_as_role(login_page, base_page, log, driver, role)
+
     yield home_page
-    # Logout after the test
+
+    # Perform logout
     LogoutUtils.sign_out_user(home_page, base_page, login_page, log, driver)

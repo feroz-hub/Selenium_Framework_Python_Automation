@@ -5,6 +5,7 @@ import pytest
 from selenium.webdriver.common.by import By
 
 from omsd_automation.pages.software.software_check import SoftwareCheckPage
+from omsd_automation.utils.db_utils import DBUtils
 from omsd_automation.utils.element_helper import fallback_find_uploaded_name
 from omsd_automation.utils.logger import setup_test_logging
 from omsd_automation.utils.login_utils import LoginUtils
@@ -464,12 +465,15 @@ def test_manual_setting(authenticated_session, upload_flow, upload_page, base_pa
 def test_customer_setting(authenticated_session, upload_flow, upload_page, base_page, country_page,search_page):
     log = setup_test_logging("update_manual_setting")
     file_to_update = "ESG-410_v01.00.00.00-Hema"
-    file_to_upload=C.TEST_MANUAL_NAME
+
     test_passed= False
     upload_flow.navigate_to_product(C.OMSD_ESG_410, "ST06-11")
     search_page.search(123456)
     base_page.wait_for_seconds(3)
     search_page.click_download_button_by_software(file_to_update)
+    search_page.complete_download_flow()
+    search_page.update_and_confirm()
+    search_page.enter_confirmation_and_check_unlock("123456",1)
     test_passed = True
 
 

@@ -47,6 +47,14 @@ class BasePage:
         """Find all elements matching the locator."""
         return WebDriverWait(self.driver, self.timeout).until(EC.presence_of_all_elements_located(locator))
 
+    def _click(self, locator: tuple):
+        """
+        Waits for an element to be clickable and then clicks it.
+        This is much more reliable than just finding the element and clicking.
+        """
+        # The key change is using EC.element_to_be_clickable instead of just finding the element.
+        element = self.wait.until(EC.element_to_be_clickable(locator))
+        element.click()
     def click(self, locator):
         """Click an element safely with retry logic."""
         el = WebDriverWait(self.driver, self.timeout).until(
@@ -373,25 +381,25 @@ class BasePage:
         element.click()
         return element.is_selected()
 
-    def set_checkbox_state(self, locator, desired_state, timeout=10):
-        """
-        Set checkbox to a specific state (checked/unchecked).
-
-        Args:
-            locator: Tuple of (By, selector) for the checkbox
-            desired_state: bool - True to check, False to uncheck
-            timeout: Maximum time to wait for element
-
-        Returns:
-            bool: Final state of checkbox
-        """
-        element = self.wait_for_element_to_be_clickable(locator, timeout)
-        current_state = element.is_selected()
-
-        if current_state != desired_state:
-            element.click()
-
-        return element.is_selected()
+    # def set_checkbox_state(self, locator, desired_state, timeout=10):
+    #     """
+    #     Set checkbox to a specific state (checked/unchecked).
+    #
+    #     Args:
+    #         locator: Tuple of (By, selector) for the checkbox
+    #         desired_state: bool - True to check, False to uncheck
+    #         timeout: Maximum time to wait for element
+    #
+    #     Returns:
+    #         bool: Final state of checkbox
+    #     """
+    #     element = self.wait_for_element_to_be_clickable(locator, timeout)
+    #     current_state = element.is_selected()
+    #
+    #     if current_state != desired_state:
+    #         element.click()
+    #
+    #     return element.is_selected()
 
     def check_multiple_checkboxes(self, locators, timeout=10):
         """
@@ -521,21 +529,21 @@ class BasePage:
             return False
 
     # Helper method for checkbox groups (like terms & conditions, preferences, etc.)
-    def handle_checkbox_group(self, checkboxes_config, timeout=10):
-        """
-        Handle a group of checkboxes based on configuration.
-
-        Args:
-            checkboxes_config: Dict with checkbox locators as keys and desired states as values
-                              Example: {
-                                  (By.ID, "terms"): True,
-                                  (By.ID, "newsletter"): False,
-                                  (By.ID, "notifications"): True
-                              }
-            timeout: Maximum time to wait for each element
-        """
-        for locator, desired_state in checkboxes_config.items():
-            self.set_checkbox_state(locator, desired_state, timeout)
+    # def handle_checkbox_group(self, checkboxes_config, timeout=10):
+    #     """
+    #     Handle a group of checkboxes based on configuration.
+    #
+    #     Args:
+    #         checkboxes_config: Dict with checkbox locators as keys and desired states as values
+    #                           Example: {
+    #                               (By.ID, "terms"): True,
+    #                               (By.ID, "newsletter"): False,
+    #                               (By.ID, "notifications"): True
+    #                           }
+    #         timeout: Maximum time to wait for each element
+    #     """
+    #     for locator, desired_state in checkboxes_config.items():
+    #         self.set_checkbox_state(locator, desired_state, timeout)
 
     def wait_for_page_to_reappear(self, locator, timeout=10):
         """
