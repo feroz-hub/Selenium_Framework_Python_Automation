@@ -8,24 +8,26 @@ Automated end-to-end UI tests for the Olympus Medical Software Delivery web appl
 - Language: Python (version TBD — see TODO)
 - Test framework: Pytest
 - UI automation: Selenium WebDriver
-- Driver management: webdriver-manager (macOS paths auto-managed; Windows paths configurable)
+- Driver management: webdriver-manager for macOS; explicit driver paths for Windows via config.yaml
 - Configuration: YAML (config.yaml)
-- Reporting: pytest-html (self‑contained HTML report)
-- Logging & screenshots: Custom utilities under omsd_automation/utils and screenshots directory
+- Reporting: pytest-html (self‑contained HTML report) and Allure (results only)
+- Logging & screenshots: Custom utilities under omsd_automation/utils; artifacts saved under project-level logs/ and screenshots/
 - Package manager: pip (requirement.txt)
 
 ## Project structure
 - config.yaml — environment, base_url, browser options, user credentials, timeouts, driver paths
 - requirement.txt — Python dependencies
-- pytest.ini — Pytest options, HTML report path, markers
+- pytest.ini — Pytest options, report paths, markers
 - omsd_automation/
-  - pages/ — Page Object Model classes (Base, Login, Home, Software, Upload)
-  - tests/ — Tests, logs/, reports/, and test_config constants
+  - pages/ — Page Object Model classes (Base, Login, Home, Software, Upload, etc.)
   - utils/ — Config reader, browser utils, logger, data loader, element helpers, login/logout helpers, screenshot utils
-  - uploads/ — Sample upload payloads
-  - downloads/ — Download targets used by tests
-  - screenshots/ — Captured images
+- tests/ — Test suites and fixtures (conftest.py, login/, software/, etc.)
+- uploads/ — Sample upload payloads
+- downloads/ — Download targets used by tests
+- screenshots/ — Captured images
 - data/ — Example test data CSV
+- reports/ — Test reports (pytest HTML, Allure results)
+- logs/ — Run logs
 - LICENSE — Project license
 
 ## Requirements
@@ -33,7 +35,7 @@ Automated end-to-end UI tests for the Olympus Medical Software Delivery web appl
 - Supported browsers: Chrome (primary), Firefox, Edge, Safari (macOS only)
 - WebDrivers:
   - Chrome: On macOS auto-installed via webdriver-manager. On Windows, path configured via config.yaml: chrome_driver_path.
-  - Firefox/Edge: Placeholders exist in conftest.py for Windows paths. See Setup section to configure.
+  - Firefox/Edge: Placeholders exist in tests/conftest.py for Windows paths. Update these if you plan to run Firefox/Edge.
 - OS: Windows, macOS (Linux not validated — TODO)
 
 ## Setup
@@ -53,46 +55,47 @@ Automated end-to-end UI tests for the Olympus Medical Software Delivery web appl
    - Open config.yaml and review:
      - env: active environment key (staging or prod)
      - environments.<env>.base_url: target URL
-     - environments.<env>.users: credentials per role (software_uploader, distribution_manager)
+     - environments.<env>.users: credentials per role (software_uploader, distribution_manager, etc.)
      - base_url: top-level base URL fallback (kept for backward compatibility)
      - browser: chrome | edge | safari | firefox
      - headless: true|false
      - implicit_wait, explicit_wait
-     - chrome_driver_path: Path to your local ChromeDriver (Windows). Example:
+     - chrome_driver_path (Windows): Path to your local ChromeDriver. Example:
        - C:\\Tools\\chromedriver\\chromedriver.exe
    - Windows (Chrome): Ensure chrome_driver_path points to a valid ChromeDriver matching your Chrome version.
-   - Windows (Firefox/Edge): conftest.py contains placeholder paths (r"path_to_your_local_geckodriver.exe" / edgedriver.exe). Update these if you plan to run Firefox/Edge.
+   - Windows (Firefox/Edge): tests/conftest.py contains placeholder paths (r"path_to_your_local_geckodriver.exe" / r"path_to_your_local_edgedriver.exe"). Update these if you plan to run Firefox/Edge.
    - macOS: Chrome/Firefox/Edge drivers are resolved via webdriver-manager when using those browsers.
 
 5. Optional: Remove secrets from config.yaml (recommended)
    - Replace plaintext usernames/passwords with environment variables (see Security and secrets).
 
 ## Running tests
-Pytest is configured via pytest.ini to generate an HTML report at reports/report.html.
+Pytest is configured via pytest.ini to generate:
+- HTML report at reports/pytest/report.html
+- Allure results at reports/allure-results
 
 - Run all tests
   - pytest
 
-- Run with verbose output and HTML report (already default via pytest.ini)
+- Run with verbose output
   - pytest -v
 
-- Run only login tests (using marker)
-  - pytest -m login
+- Run a specific test file
+  - pytest tests/login/test_login.py -v
 
-- Specify a browser via config.yaml (preferred) or override via environment variable/TODO hook
-  - Edit browser: in config.yaml (e.g., chrome, firefox)
+- Run smoke or regression sets (see markers)
+  - pytest -m smoke
+  - pytest -m regression
 
-- Run a single test file
-  - pytest omsd_automation/tests/test_login.py -v
-
-- Generate a fresh report
-  - pytest --html=reports/report.html --self-contained-html
+- Regenerate HTML report manually (if needed)
+  - pytest --html=reports/pytest/report.html --self-contained-html
 
 Test artifacts
-- HTML Report: reports/report.html (also under omsd_automation/tests/reports/report.html from recent runs)
-- Logs: omsd_automation/tests/logs
-- Screenshots: omsd_automation/screenshots
-- Downloads: omsd_automation/downloads
+- HTML Report: reports/pytest/report.html
+- Allure results: reports/allure-results
+- Logs: logs/
+- Screenshots: screenshots/
+- Downloads: downloads/
 
 ## Scripts
 No custom CLI scripts are defined. Use pytest commands as shown above.
@@ -106,8 +109,7 @@ Important keys in config.yaml
   - <env>:
     - base_url: string
     - users:
-      - software_uploader.username / password
-      - distribution_manager.username / password
+      - software_uploader.username / password, etc.
 - base_url (top-level): fallback URL (legacy)
 - browser: chrome | edge | safari | firefox
 - headless: boolean
@@ -125,11 +127,11 @@ Recommended environment variables (not implemented yet — TODO)
 These would require small code changes in config_reader.py to read from os.environ before falling back to YAML.
 
 ## How it works
-- conftest.py provisions the WebDriver based on config.yaml (browser, headless, driver paths), maximizes window, sets implicit wait, and navigates to base_url.
-- Fixtures construct Page Objects: BasePage, LoginPage, SoftwarePage, UploadPage, HomePage.
+- tests/conftest.py provisions the WebDriver based on config.yaml (browser, headless, driver paths), maximizes window, sets implicit wait, and navigates to base_url. It also sets browser download locations to the project downloads/ folder.
+- Fixtures construct Page Objects: BasePage, LoginPage, SoftwarePage, UploadPage, HomePage, etc.
 - authenticated_session fixture logs in before each test and logs out after.
-- pytest.ini adds default options: -v --tb=short --html=reports/report.html --self-contained-html and defines markers: login, logout, smoke.
-- tests use constants from omsd_automation/tests/test_config.py for shared paths and timeouts.
+- pytest.ini adds default options including parallelization (-n auto), HTML report path, Allure results path, and defines markers: smoke, regression, esg.
+- tests use constants from tests/test_config.py for shared paths and timeouts.
 
 ## Security and secrets
 - WARNING: config.yaml currently contains plaintext credentials for staging and placeholder prod. Do not commit real credentials.
@@ -141,10 +143,10 @@ These would require small code changes in config_reader.py to read from os.envir
 ## Screenshots: how to use them
 
 Where screenshots are saved
-- Base directory: omsd_automation/screenshots (configured by omsd_automation/tests/test_config.py as SCREENSHOTS_DIR)
+- Base directory: screenshots/ (configured by tests/test_config.py as SCREENSHOTS_DIR)
 - Organized automatically by product and test case when possible, e.g.:
-  - omsd_automation/screenshots/ESG-410/upload_software/ESG-410_upload_software_ST06-11_20250101_121314.png
-- If product or test case cannot be detected, screenshots are saved directly under omsd_automation/screenshots.
+  - screenshots/ESG-410/upload_software/ESG-410_upload_software_ST06-11_20250101_121314.png
+- If product or test case cannot be detected, screenshots are saved directly under screenshots/.
 
 Taking screenshots in tests (recommended)
 - Using BasePage (most convenient):
@@ -173,19 +175,19 @@ Tips
 - ChromeDriver version mismatch on Windows
   - Update chrome_driver_path to point to a driver matching your installed Chrome version.
 - Downloads not saving to the expected folder
-  - See Chrome prefs in conftest.py; downloads default to omsd_automation/tests/downloads.
+  - See Chrome/Edge/Firefox prefs in tests/conftest.py; downloads default to downloads/.
 - Unsupported browser error
   - Ensure browser in config.yaml is one of chrome|firefox|edge|safari (safari only on macOS).
 - Report not generated
   - Ensure pytest-html is installed and pytest.ini is present.
 
 ## Tests
-- Location: omsd_automation/tests
-- Example suites: test_login.py, test_logout.py, test_software_upload.py, product-specific tests (ESG/USG 410)
-- Markers: login, logout, smoke
+- Location: tests/
+- Example suites: tests/login/test_login.py, tests/login/test_logout.py, tests/software/esg/test_ESG_410_software_upload.py, product-specific tests (ESG/USG 410)
+- Markers: smoke, regression, esg
 - Run examples:
   - pytest -m smoke
-  - pytest omsd_automation/tests/test_ESG_410_software_upload.py -v
+  - pytest tests/software/esg/test_ESG_410_software_upload.py -v
 
 ## License
 This project is licensed under the terms of the LICENSE file included at the repository root. See LICENSE for details.
