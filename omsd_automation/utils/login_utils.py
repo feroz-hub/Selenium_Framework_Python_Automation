@@ -1,3 +1,5 @@
+from omsd_automation.pages.base.base_page import BasePage
+from omsd_automation.pages.login_page import LoginPage
 from omsd_automation.utils.config_reader import Config
 from tests import test_config as C
 
@@ -30,3 +32,13 @@ class LoginUtils:
         base_page.accept_cookies()
         base_page.wait_for_seconds(2)
         base_page.take_screenshot("STS06-10")
+
+    @staticmethod
+    def reset_to_login_page(login_page: LoginPage, base_page: BasePage, driver, log, timeout: int = 20):
+        """
+        Reset back to the login page and wait for the username input to appear.
+        """
+        log.info("🔄 Resetting to login page before new login attempt")
+        driver.get("https://softwaredelivery-stg3.olympusmedical.com")
+        base_page.wait_for_element_to_be_visible(login_page.USERNAME, timeout=timeout)
+        log.info("✅ Successfully reset to login page")

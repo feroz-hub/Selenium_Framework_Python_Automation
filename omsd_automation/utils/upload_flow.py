@@ -304,6 +304,7 @@ class UploadFlow:
                         f"//button[contains(@onclick, 'clickDownload') and contains(., '{escaped}')]"
                     )
                     download_button.click()
+                    self.base_page.wait_for_seconds(2)
                     self.base_page.take_screenshot("STS06-15")
                     self.base_page.wait_for_seconds(wait_seconds)
                     self.log.verification(f"Download initiated for file: '{file_name}'", True)
@@ -349,8 +350,14 @@ class UploadFlow:
 
             self.log.action(f"Clicking download button for file: '{file_name}'")
             download_button.click()
-            self.base_page.wait_for_seconds(wait_seconds)
+            #self.base_page.take_screenshot("STS06-15")
+            self.base_page.wait_for_seconds(2)
+            self.base_page.take_screenshot("STS06-15")
             self.log.verification(f"Download initiated for file: '{file_name}'", True)
+            self.base_page.take_screenshot("STS06-16")
+            self.base_page.wait_for_seconds(2)
+            self.base_page.take_screenshot("STS06-17")
+
 
         except Exception as e:
             self.log.error(f"Failed while initiating download: {e}")

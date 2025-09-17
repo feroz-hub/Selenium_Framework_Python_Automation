@@ -364,6 +364,9 @@ class TestLogger:
     def page_info(self, title: str, url: str):
         self.logger.info(f"🌐 PAGE INFO: Title='{title}', URL='{url}'")
 
+    def info(self, message: str):
+        self.logger.info(f"ℹ️ INFO: {message}")
+
     def element_found(self, element_description: str, locator: str = ""):
         loc_info = f" (Locator: {locator})" if locator else ""
         self.logger.info(f"✅ ELEMENT FOUND: {element_description}{loc_info}")

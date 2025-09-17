@@ -64,7 +64,9 @@ class UploadPage(BasePage):
         """Clicks the button to open the upload software modal."""
         self.log.action("Clicking 'Upload Software' button to open the popup.")
         self.click(self.UPLOAD_SOFTWARE_BTN)
+        self.wait_for_page_ready()
         self.take_screenshot("STS06-12")
+        self.wait_for_seconds(2)
 
     def upload_file(self, file_path: str):
         """Sends the file path to the hidden file input element."""
@@ -318,9 +320,10 @@ class UploadPage(BasePage):
     def submit_upload(self):
         """Clicks the two confirmation buttons to finalize the upload."""
         self.log.action("Clicking 'Confirm' button on the initial upload form.")
-        self.take_screenshot("STS06-13")
-        self.click(self.BTN_ADD_CONFIRM)
 
+        self.click(self.BTN_ADD_CONFIRM)
+        self.wait_for_page_ready()
+        self.take_screenshot("STS06-13")
         self.log.wait_start("Waiting for the final 'Upload' confirmation button to be clickable.", 10)
         self.wait_for_element_to_be_clickable(self.BTN_UPLOAD_CONFIRM)
         self.log.action("Clicking the final 'Upload' confirmation button.")

@@ -56,7 +56,7 @@ class DBUtils:
 
 
 if __name__ == "__main__":
-    serial_number = "123456"
+    serial_number = "OSTETEST123456"
     product_id = 1  # replace with a valid test ProductId
 
     confirm_code = DBUtils.get_confirmation_and_unlock(serial_number, product_id)

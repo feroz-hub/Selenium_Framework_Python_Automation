@@ -2,7 +2,6 @@ import time
 import traceback
 
 import pytest
-from selenium.webdriver.common.by import By
 
 from omsd_automation.utils.element_helper import fallback_find_uploaded_name
 from omsd_automation.utils.logger import setup_test_logging
@@ -12,7 +11,7 @@ from omsd_automation.utils.logout_utils import LogoutUtils
 from tests import test_config as C
 from tests.conftest import country_page
 
-
+@pytest.mark.order(1)
 @pytest.mark.parametrize("authenticated_session", ["software_uploader"], indirect=True)
 def test_upload_software(authenticated_session, upload_flow, base_page):
     log = setup_test_logging("upload_software")
@@ -51,7 +50,7 @@ def test_upload_software(authenticated_session, upload_flow, base_page):
         # Normalize and verify file name (allow contains match)
         upload_flow.normalize_and_assert_filename(found_file_text, file_to_upload)
         upload_flow.download_uploaded_file(file_to_upload)
-        base_page.take_screenshot("STS06-17")
+
 
         # --- Sign out and verify redirection to login ---
 
@@ -76,7 +75,7 @@ def test_upload_software(authenticated_session, upload_flow, base_page):
     finally:
         log.test_end("test_upload_software", success=test_passed)
 
-
+@pytest.mark.order(2)
 @pytest.mark.parametrize("authenticated_session", ["software_uploader"], indirect=True)
 def test_public_bc_setting(authenticated_session, upload_flow, upload_page, base_page):
     """
@@ -120,6 +119,8 @@ def test_public_bc_setting(authenticated_session, upload_flow, upload_page, base
 
     finally:
         log.test_end("bc_setting_updated", success=test_passed)
+
+@pytest.mark.order(3)
 @pytest.mark.parametrize("roles", [("distribution_manager_without_permission", "distribution_manager")])
 def test_public_country_setting_multi_user(roles,driver, upload_flow, base_page, login_page, software_page, upload_page,
                                 home_page):
@@ -192,52 +193,8 @@ def test_public_country_setting_multi_user(roles,driver, upload_flow, base_page,
     finally:
         log.test_end("bc_setting_updated", success=test_passed)
 
-@pytest.mark.parametrize("roles", [("distribution_manager_without_permission", "distribution_manager")])
-def test_public_manual_settings_multi_user(roles,driver, upload_flow, base_page, login_page, software_page, upload_page,
-                                home_page,edit_software_release_page):
-    """
-    Test to verify the 'Public Country' setting during software upload.
-    Steps:
-    1. Login as distribution manager.
-    2. Navigate to a product software list.
-    3. Upload a software package with 'Public Country' enabled.
-    4. Verify the upload was successful via toast and list.
-    5. Reopen the uploaded package and verify 'Public Country' is still enabled.
-    6. Sign out and verify redirection to the login page.
-    """
-    # 1) Login as end_user
-    log = setup_test_logging("upload_software_public_country")
 
-
-    log.test_start("test_upload_software_public_country")
-    test_passed = False
-    file_to_update = "ESG-410_v01.00.00.00-Hema"
-    file_to_upload = C.TEST_MANUAL_NAME
-    try:
-        # --- Step 1: Login ---
-        LoginUtils.login_as_role(login_page, base_page, log, driver, roles[0])
-
-        # --- Step 2: Navigate to a product software list ---
-        log.step("Step 2: Navigate to product software list")
-        upload_flow.navigate_to_product(C.OMSD_ESG_410, "bc_setting_updated")
-        # --- Step 3: Select Uploaded software ---
-        log.step("Step 3: Select the uploaded software to change Public Country setting")
-        upload_flow.select_uploaded_file(file_to_update, "ST07-03")
-        log.action(f"Looking for uploaded software file: {file_to_update}")
-        file_path = upload_flow.build_upload_path(C.MANUALS_DIR, file_to_upload, log)
-
-        time.sleep(3)
-        # edit_software_release_page.click_add_button()
-        edit_software_release_page.upload_pdf(file_path)
-        test_passed = True
-        LogoutUtils.sign_out_user(home_page, base_page, login_page, log, driver)
-    except Exception as e:
-        log.error(f"Exception occurred during test: {e}")
-        base_page.take_screenshot("ST07_Error")
-        raise
-    finally:
-        log.test_end("bc_setting_updated", success=test_passed)
-
+@pytest.mark.order(4)
 @pytest.mark.parametrize("authenticated_session", ["customer"], indirect=True)
 def test_customer_setting(authenticated_session, upload_flow, upload_page, base_page, country_page,search_page):
     log = setup_test_logging("update_manual_setting")
@@ -253,7 +210,7 @@ def test_customer_setting(authenticated_session, upload_flow, upload_page, base_
     search_page.enter_confirmation_and_check_unlock("123456",1)
     test_passed = True
 
-
+@pytest.mark.order(5)
 @pytest.mark.parametrize("authenticated_session", ["device_update_executor_without_permission"], indirect=True)
 def test_device_update_executor_without_permission_setting(authenticated_session, upload_flow, upload_page, base_page, country_page,search_page):
     log = setup_test_logging("update_manual_setting")
@@ -268,7 +225,7 @@ def test_device_update_executor_without_permission_setting(authenticated_session
     search_page.update_and_confirm()
     search_page.enter_confirmation_and_check_unlock("OSTETEST123",1)
     test_passed = True
-
+pytest.mark.order(6)
 @pytest.mark.parametrize("authenticated_session", ["device_update_executor"], indirect=True)
 def test_device_update_executor_setting(authenticated_session, upload_flow, upload_page, base_page, country_page,search_page):
     log = setup_test_logging("update_manual_setting")
@@ -283,36 +240,3 @@ def test_device_update_executor_setting(authenticated_session, upload_flow, uplo
     search_page.update_and_confirm()
     search_page.enter_confirmation_and_check_unlock("OSTETEST123456",1)
     test_passed = True
-
-# 👇 Wrapper that runs all in one case
-import pytest
-
-@pytest.mark.parametrize("authenticated_session", ["customer"], indirect=True)
-def test_full_flow(
-    authenticated_session,
-    roles,
-    driver,
-    upload_flow,
-    upload_page,
-    base_page,
-    login_page,
-    software_page,
-    home_page,
-    country_page,
-    search_page,
-):
-    # Call each test one by one in sequence
-    test_upload_software(authenticated_session, upload_flow, base_page)
-    test_public_bc_setting(authenticated_session, upload_flow, upload_page, base_page)
-    test_public_country_setting_multi_user(
-        roles, driver, upload_flow, base_page, login_page, software_page, upload_page, home_page
-    )
-    test_manual_setting(authenticated_session, upload_flow, upload_page, base_page, country_page)
-    test_customer_setting(authenticated_session, upload_flow, upload_page, base_page, country_page, search_page)
-    test_device_update_executor_without_permission_setting(
-        authenticated_session, upload_flow, upload_page, base_page, country_page, search_page
-    )
-    test_device_update_executor_setting(
-        authenticated_session, upload_flow, upload_page, base_page, country_page, search_page
-    )
-
