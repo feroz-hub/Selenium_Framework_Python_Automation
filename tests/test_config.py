@@ -26,7 +26,7 @@ OMSD_USG_410 = "USG-410"
 TEST_PRODUCTS: List[str] = ["ESG-410", "ESG-420"]
 
 # Test file configuration
-TEST_FILE_NAME = "ESG-410_v01.00.00.00-New_11"
+TEST_FILE_NAME = "ESG-410_v01.00.00.00-Hema"
 TEST_MANUAL_NAME="ESG-410_1.pdf"
 # Timeout configuration (in seconds)
 DEFAULT_TIMEOUT = 15

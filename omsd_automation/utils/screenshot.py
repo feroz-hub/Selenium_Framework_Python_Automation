@@ -133,10 +133,10 @@ def save_screenshot_organized(driver, step_name: str, *, product: Optional[str] 
     folder_path.mkdir(parents=True, exist_ok=True)
 
     # Filename with product/test_case prefixes if available
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    #timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     prefix_bits = [b for b in [product, test_case] if b]
     prefix = "_".join(prefix_bits) + ("_" if prefix_bits else "")
-    filename = f"{prefix}{step}_{timestamp}.png"
+    filename = f"{prefix}{step}.png"
 
     full_path = folder_path / filename
     driver.save_screenshot(str(full_path))

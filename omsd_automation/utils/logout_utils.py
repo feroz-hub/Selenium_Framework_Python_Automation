@@ -15,6 +15,7 @@ class LogoutUtils:
         log.step("Step 7: Sign out")
         home_page.sign_out()
         base_page.wait_for_seconds(2)
+        base_page.take_screenshot("STS06-18")
         login_page.wait_for_element((By.ID, "signInName"))
         is_on_login_page = base_page.is_visible((By.ID, "signInName"))
         log.verification("User is redirected to login page after sign out", is_on_login_page)

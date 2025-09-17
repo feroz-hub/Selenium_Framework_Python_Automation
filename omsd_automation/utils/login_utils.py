@@ -29,4 +29,4 @@ class LoginUtils:
 
         base_page.accept_cookies()
         base_page.wait_for_seconds(2)
-        base_page.take_screenshot("ST06-10")
+        base_page.take_screenshot("STS06-10")

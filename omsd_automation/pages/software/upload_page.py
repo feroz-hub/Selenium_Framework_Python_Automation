@@ -9,7 +9,7 @@ from omsd_automation.pages.base.base_page import BasePage
 # Import the class-level logger utility
 import time
 import os
-
+from selenium.webdriver.support import expected_conditions as EC
 
 class UploadPage(BasePage):
     """Page object for Upload Software popup."""
@@ -64,6 +64,7 @@ class UploadPage(BasePage):
         """Clicks the button to open the upload software modal."""
         self.log.action("Clicking 'Upload Software' button to open the popup.")
         self.click(self.UPLOAD_SOFTWARE_BTN)
+        self.take_screenshot("STS06-12")
 
     def upload_file(self, file_path: str):
         """Sends the file path to the hidden file input element."""
@@ -107,19 +108,20 @@ class UploadPage(BasePage):
         self.log.action("Setting display status radio button.")
         self.click(self.DO_NOT_DISPLAY_RADIO)
 
-    def wait_for_uploaded_file_name(self, timeout=20):
-        """Waits for the toast message and extracts the uploaded file name from it."""
-        self.log.wait_start("Waiting for the uploaded file name to appear in the toast.", timeout)
-        try:
-            file_element = WebDriverWait(self.driver, timeout).until(
-                EC.visibility_of_element_located(self.UPLOADED_FILE_NAME)
-            )
-            file_name = file_element.text
-            self.log.wait_success(f"File name found in toast: '{file_name}'")
-            return file_name
-        except TimeoutException:
-            self.log.wait_timeout("File name did not appear in the toast.", timeout)
-            raise  # Re-raise exception to fail the test
+    # def wait_for_uploaded_file_name(self, timeout=20):
+    #     """Waits for the toast message and extracts the uploaded file name from it."""
+    #     self.log.wait_start("Waiting for the uploaded file name to appear in the toast.", timeout)
+    #     try:
+    #         file_element = WebDriverWait(self.driver, timeout).until(
+    #             EC.visibility_of_element_located(self.UPLOADED_FILE_NAME)
+    #         )
+    #         file_name = file_element.text
+    #         self.log.wait_success(f"File name found in toast: '{file_name}'")
+    #         return file_name
+    #     except TimeoutException:
+    #         self.log.wait_timeout("File name did not appear in the toast.", timeout)
+    #         raise  # Re-raise exception to fail the test
+
     #
     # def update_bc_setting(self, timeout=10):
     #     self.log.action("Setting display status radio button.")
@@ -316,7 +318,9 @@ class UploadPage(BasePage):
     def submit_upload(self):
         """Clicks the two confirmation buttons to finalize the upload."""
         self.log.action("Clicking 'Confirm' button on the initial upload form.")
+        self.take_screenshot("STS06-13")
         self.click(self.BTN_ADD_CONFIRM)
+
         self.log.wait_start("Waiting for the final 'Upload' confirmation button to be clickable.", 10)
         self.wait_for_element_to_be_clickable(self.BTN_UPLOAD_CONFIRM)
         self.log.action("Clicking the final 'Upload' confirmation button.")

@@ -87,7 +87,7 @@ class UploadFlow:
         """Wait for toast and check it contains the expected text."""
         try:
             toast_text = self.upload_page.wait_for_toast(timeout=timeout)
-            self.base_page.take_screenshot("Toast_Check")
+            self.base_page.take_screenshot("STS06-14")
             ok = expected_substring.lower() in (toast_text or "").lower()
             self.log.verification(f"Toast contains '{expected_substring}'", ok)
             assert ok, f"Toast was '{toast_text}' but expected '{expected_substring}'"
@@ -304,6 +304,7 @@ class UploadFlow:
                         f"//button[contains(@onclick, 'clickDownload') and contains(., '{escaped}')]"
                     )
                     download_button.click()
+                    self.base_page.take_screenshot("STS06-15")
                     self.base_page.wait_for_seconds(wait_seconds)
                     self.log.verification(f"Download initiated for file: '{file_name}'", True)
                     return

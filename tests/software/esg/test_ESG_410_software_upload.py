@@ -4,8 +4,6 @@ import traceback
 import pytest
 from selenium.webdriver.common.by import By
 
-from omsd_automation.pages.software.software_check import SoftwareCheckPage
-from omsd_automation.utils.db_utils import DBUtils
 from omsd_automation.utils.element_helper import fallback_find_uploaded_name
 from omsd_automation.utils.logger import setup_test_logging
 from omsd_automation.utils.login_utils import LoginUtils
@@ -16,7 +14,7 @@ from tests.conftest import country_page
 
 
 @pytest.mark.parametrize("authenticated_session", ["software_uploader"], indirect=True)
-def test_upload_software(authenticated_session, upload_flow):
+def test_upload_software(authenticated_session, upload_flow, base_page):
     log = setup_test_logging("upload_software")
     file_to_upload = C.TEST_FILE_NAME
     test_passed = False
@@ -34,7 +32,7 @@ def test_upload_software(authenticated_session, upload_flow):
         # authenticated_session is a pytest fixture that logs in once per module
 
         # --- Step 2: Navigate to a product software list ---
-        upload_flow.navigate_to_product(C.OMSD_ESG_410, "ST06-11")
+        upload_flow.navigate_to_product(C.OMSD_ESG_410, "STS06-11")
 
         # --- Step 3: Upload software ---
         log.step("Step 3: Perform software upload")
@@ -53,6 +51,7 @@ def test_upload_software(authenticated_session, upload_flow):
         # Normalize and verify file name (allow contains match)
         upload_flow.normalize_and_assert_filename(found_file_text, file_to_upload)
         upload_flow.download_uploaded_file(file_to_upload)
+        base_page.take_screenshot("STS06-17")
 
         # --- Sign out and verify redirection to login ---
 
@@ -461,11 +460,11 @@ def test_manual_setting(authenticated_session, upload_flow, upload_page, base_pa
         raise
     finally:
         log.test_end("test_update_manual_setting", success=test_passed)
-@pytest.mark.parametrize("authenticated_session", ["customer"], indirect=True)
-def test_customer_setting(authenticated_session, upload_flow, upload_page, base_page, country_page,search_page):
+@pytest.mark.parametrize("roles", [("customer", "device_update_executor_without_permission", "device_update_executor")])
+def test_customer_setting(roles, upload_flow, upload_page, driver,login_page, base_page, country_page,search_page):
     log = setup_test_logging("update_manual_setting")
     file_to_update = "ESG-410_v01.00.00.00-Hema"
-
+    LoginUtils.login_as_role(login_page, base_page, log, driver, roles[0])
     test_passed= False
     upload_flow.navigate_to_product(C.OMSD_ESG_410, "ST06-11")
     search_page.search(123456)
@@ -474,8 +473,41 @@ def test_customer_setting(authenticated_session, upload_flow, upload_page, base_
     search_page.complete_download_flow()
     search_page.update_and_confirm()
     search_page.enter_confirmation_and_check_unlock("123456",1)
+    LogoutUtils.sign_out_user(home_page, base_page, login_page, log, driver)
     test_passed = True
 
+
+# Helper functions
+def login_user(role, login_page, base_page, log, driver):
+    LoginUtils.login_as_role(login_page, base_page, log, driver, role)
+
+def logout_user(home_page, base_page, login_page, log, driver):
+    LogoutUtils.sign_out_user(home_page, base_page, login_page, log, driver)
+
+# Parametrize with tuples of (role, serial_number)
+@pytest.mark.parametrize("role, serial_number", [
+    ("customer", "123456"),
+    ("device_update_executor_without_permission", "OSTETEST123"),
+    ("device_update_executor", "OSTETEST123456")
+])
+def test_customer_setting(role, serial_number, upload_flow, upload_page, driver, login_page, base_page, country_page, search_page, home_page):
+    log = setup_test_logging("update_manual_setting")
+    file_to_update = "ESG-410_v01.00.00.00-Hema"
+    test_passed = False
+
+    login_user(role, login_page, base_page, log, driver)
+
+    upload_flow.navigate_to_product(C.OMSD_ESG_410, "ST06-11")
+    search_page.search(serial_number)
+    base_page.wait_for_seconds(3)
+    search_page.click_download_button_by_software(file_to_update)
+    search_page.complete_download_flow()
+    search_page.update_and_confirm()
+    search_page.enter_confirmation_and_check_unlock(serial_number, 1)
+
+    logout_user(home_page, base_page, login_page, log, driver)
+
+    test_passed = True
 
 # @pytest.mark.parametrize("authenticated_session", ["end_user"], indirect=True)
 # def test_public_country_setting(authenticated_session, upload_flow, software_check_page ):
