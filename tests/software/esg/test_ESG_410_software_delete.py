@@ -10,7 +10,7 @@ def test_delete_software(authenticated_session, driver, base_page, login_page, s
     log = setup_test_logging("delete_software")
     log.test_start("test_delete_software")
     log.step("Navigate to software deletion test")
-    log.action(f"Test file to delete: {C.TEST_FILE_NAME}")
+    log.action(f"Test file to delete: {C.ESG_TEST_FILE_NAME}")
     test_passed = False
 
     try:
@@ -27,7 +27,7 @@ def test_delete_software(authenticated_session, driver, base_page, login_page, s
 
         # Step 3: Select Uploaded Software
         log.step("Step 3: Select the uploaded software to delete")
-        file_to_delete = C.TEST_FILE_NAME
+        file_to_delete = C.ESG_TEST_FILE_NAME
         log.action(f"Looking for uploaded software file: {file_to_delete}")
 
         file_link_locator = (

@@ -82,7 +82,15 @@ class UploadFlow:
         self.log.action(f"Uploading file: '{file_path.name}'")
         self.upload_page.perform_upload(str(file_path))
         return file_path
-
+    def perform_upload_file_usg(self, upload_dir, file_name: str) -> Path:
+        """
+        Combines building the file path and performing the upload.
+        Returns the resolved Path object for further use.
+        """
+        file_path = self.build_upload_path(upload_dir, file_name, self.log)
+        self.log.action(f"Uploading file: '{file_path.name}'")
+        self.upload_page.perform_upload_usg(str(file_path))
+        return file_path
     def verify_toast(self, expected_substring: str, timeout: int = 10):
         """Wait for toast and check it contains the expected text."""
         try:

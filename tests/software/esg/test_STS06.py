@@ -24,7 +24,7 @@ def test_combined_software_upload(driver, upload_flow, base_page, upload_page, l
     log = setup_test_logging("combined_upload_flow")
     test_passed = False
 
-    file_to_upload = C.TEST_FILE_NAME
+    file_to_upload = C.ESG_TEST_FILE_NAME
     file_to_update = "ESG-410_v01.00.00.00-Hema"
 
     try:

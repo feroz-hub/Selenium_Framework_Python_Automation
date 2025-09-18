@@ -109,7 +109,42 @@ class UploadPage(BasePage):
 
         self.log.action("Setting display status radio button.")
         self.click(self.DO_NOT_DISPLAY_RADIO)
+    def fill_upload_details_usg(self):
+        page=CountrySelectionPage(self.driver,self.log)
+        """Fills out all the required fields and checkboxes in the upload form."""
+        self.log.action("Filling out the software upload details form.")
 
+        self.log.action("Selecting 'Device Update Executers' package type.")
+        self.click(self.PACKAGE_TYPE_RADIO)
+
+        self.log.action("Setting Confirmation Code to 'On'.")
+        self.click(self.ON_TOGGLE)
+
+        self.log.action("Selecting 'by countries' publish type.")
+        self.click(self.BY_COUNTRIES_TAB)
+
+        # self.log.action("Waiting for Material ID checkbox to be visible.")
+        # #page.select_all_bcs()
+        # self.wait_for_element_to_be_visible(self.MATERIAL_ID_CHECKBOX, timeout=20)
+        # self.log.action("Scrolling to and clicking 'All material IDs below' checkbox.")
+        # self.scroll_into_view(self.MATERIAL_ID_CHECKBOX)
+        # self.click(self.MATERIAL_ID_CHECKBOX)
+
+        self.log.action("Waiting for Region checkbox to be clickable.")
+        self.wait_for_element_to_be_visible(self.ALL_BCS_CHECKBOX, timeout=15)
+        self.log.action("Scrolling to and clicking 'OMSI' region checkbox.")
+        self.scroll_into_view(self.ALL_BCS_CHECKBOX)
+        self.click(self.ALL_BCS_CHECKBOX)
+
+        # self.log.action("Waiting for Region checkbox to be clickable.")
+        # # self.wait_for_element_to_be_visible(self.CHECK_ALL_REGIONS, timeout=15)
+        # self.log.action("Scrolling to and clicking 'OMSI' region checkbox.")
+        # self.scroll_into_view(self.CHECK_ALL_REGIONS)
+        # self.click(self.CHECK_ALL_REGIONS)
+        # page.select_all_countries()
+
+        self.log.action("Setting display status radio button.")
+        self.click(self.DO_NOT_DISPLAY_RADIO)
     # def wait_for_uploaded_file_name(self, timeout=20):
     #     """Waits for the toast message and extracts the uploaded file name from it."""
     #     self.log.wait_start("Waiting for the uploaded file name to appear in the toast.", timeout)
@@ -388,7 +423,13 @@ class UploadPage(BasePage):
         self.upload_file(file_path)
         self.fill_upload_details()
         self.submit_upload()
-
+    def perform_upload_usg(self, file_path: str):
+        """High-level flow that orchestrates the entire upload process."""
+        self.log.step(f"Starting the complete software upload process for file: {os.path.basename(file_path)}")
+        self.open_upload_popup()
+        self.upload_file(file_path)
+        self.fill_upload_details_usg()
+        self.submit_upload()
     # def revert_countries_and_save(self):
     #     # Uncheck the same selection and save again
     #     self.log.step("Revert country selection and save")

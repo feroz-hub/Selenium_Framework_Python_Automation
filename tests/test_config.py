@@ -8,6 +8,8 @@ used across the test suite for better maintainability and consistency.
 from pathlib import Path
 from typing import List
 
+from allure_commons.model2 import TEST_GROUP_PATTERN
+
 # Paths
 TEST_BASE_DIR = Path(__file__).parent.parent  # omsd_automation
 PROJECT_ROOT = Path(__file__).resolve().parents[1]  # repository root
@@ -26,7 +28,8 @@ OMSD_USG_410 = "USG-410"
 TEST_PRODUCTS: List[str] = ["ESG-410", "ESG-420"]
 
 # Test file configuration
-TEST_FILE_NAME = "ESG-410_v01.00.00.00-Hema"
+ESG_TEST_FILE_NAME = "ESG-410_v01.00.00.00-Hema"
+USG_TEST_FILE_NAME ="USG-410_v00.00.00.17-Hema"
 TEST_MANUAL_NAME="ESG-410_1.pdf"
 # Timeout configuration (in seconds)
 DEFAULT_TIMEOUT = 15
@@ -47,3 +50,10 @@ POPUP_TIMEOUT = 10
 SOFTWARE_UPLOADER_ROLE = "software_uploader"
 ADMIN_ROLE = "admin"
 VIEWER_ROLE = "viewer"
+
+# Serial Number Per User
+
+
+DEVICE_UPDATE_EXECUTOR_WITHOUT_PERMISSION_SERIAL = "OSTETEST123"
+DEVICE_UPDATE_EXECUTOR_SERIAL = "OSTETEST123456"
+CUSTOMER_SERIAL = "123456"

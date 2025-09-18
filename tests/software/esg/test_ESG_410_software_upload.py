@@ -15,7 +15,7 @@ from tests.conftest import country_page
 @pytest.mark.parametrize("authenticated_session", ["software_uploader"], indirect=True)
 def test_upload_software(authenticated_session, upload_flow, base_page):
     log = setup_test_logging("upload_software")
-    file_to_upload = C.TEST_FILE_NAME
+    file_to_upload = C.ESG_TEST_FILE_NAME
     test_passed = False
     """
         Test: Software uploader uploads ESG package successfully.
@@ -90,7 +90,7 @@ def test_public_bc_setting(authenticated_session, upload_flow, upload_page, base
     """
     log = setup_test_logging("upload_software_public_bc")
 
-    file_to_update = C.TEST_FILE_NAME
+    file_to_update = C.ESG_TEST_FILE_NAME
     test_passed = False
 
     try:
@@ -140,7 +140,7 @@ def test_public_country_setting_multi_user(roles,driver, upload_flow, base_page,
 
     log.test_start("test_upload_software_public_country")
     test_passed = False
-    file_to_update = "ESG-410_v01.00.00.00-Hema"
+    file_to_update = C.ESG_TEST_FILE_NAME
     try:
         # --- Step 1: Login ---
         LoginUtils.login_as_role(login_page, base_page, log, driver, roles[0])
@@ -198,45 +198,44 @@ def test_public_country_setting_multi_user(roles,driver, upload_flow, base_page,
 @pytest.mark.parametrize("authenticated_session", ["customer"], indirect=True)
 def test_customer_setting(authenticated_session, upload_flow, upload_page, base_page, country_page,search_page):
     log = setup_test_logging("update_manual_setting")
-    file_to_update = "ESG-410_v01.00.00.00-Hema"
-
+    file_to_update = C.ESG_TEST_FILE_NAME
     test_passed= False
     upload_flow.navigate_to_product(C.OMSD_ESG_410, "ST06-11")
-    search_page.search(123456)
+    search_page.search(C.CUSTOMER_SERIAL)
     base_page.wait_for_seconds(3)
     search_page.click_download_button_by_software(file_to_update)
     search_page.complete_download_flow()
     search_page.update_and_confirm()
-    search_page.enter_confirmation_and_check_unlock("123456",1)
+    search_page.enter_confirmation_and_check_unlock(C.CUSTOMER_SERIAL,1)
     test_passed = True
 
 @pytest.mark.order(5)
 @pytest.mark.parametrize("authenticated_session", ["device_update_executor_without_permission"], indirect=True)
 def test_device_update_executor_without_permission_setting(authenticated_session, upload_flow, upload_page, base_page, country_page,search_page):
     log = setup_test_logging("update_manual_setting")
-    file_to_update = "ESG-410_v01.00.00.00-Hema"
+    file_to_update = C.ESG_TEST_FILE_NAME
 
     test_passed= False
     upload_flow.navigate_to_product(C.OMSD_ESG_410, "ST06-11")
-    search_page.search("OSTETEST123")
+    search_page.search(C.DEVICE_UPDATE_EXECUTOR_WITHOUT_PERMISSION_SERIAL)
     base_page.wait_for_seconds(3)
     search_page.click_download_button_by_software(file_to_update)
     search_page.complete_download_flow()
     search_page.update_and_confirm()
-    search_page.enter_confirmation_and_check_unlock("OSTETEST123",1)
+    search_page.enter_confirmation_and_check_unlock(C.DEVICE_UPDATE_EXECUTOR_WITHOUT_PERMISSION_SERIAL,1)
     test_passed = True
 pytest.mark.order(6)
 @pytest.mark.parametrize("authenticated_session", ["device_update_executor"], indirect=True)
 def test_device_update_executor_setting(authenticated_session, upload_flow, upload_page, base_page, country_page,search_page):
     log = setup_test_logging("update_manual_setting")
-    file_to_update = "ESG-410_v01.00.00.00-Hema"
+    file_to_update = C.ESG_TEST_FILE_NAME
 
     test_passed= False
     upload_flow.navigate_to_product(C.OMSD_ESG_410, "ST06-11")
-    search_page.search("OSTETEST123456")
+    search_page.search(C.DEVICE_UPDATE_EXECUTOR_SERIAL)
     base_page.wait_for_seconds(3)
     search_page.click_download_button_by_software(file_to_update)
     search_page.complete_download_flow()
     search_page.update_and_confirm()
-    search_page.enter_confirmation_and_check_unlock("OSTETEST123456",1)
+    search_page.enter_confirmation_and_check_unlock(C.DEVICE_UPDATE_EXECUTOR_SERIAL,1)
     test_passed = True
