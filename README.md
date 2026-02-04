@@ -1,6 +1,6 @@
-# Selenium Framework for Olympus Medical Software Delivery (OMSD)
+# Selenium Framework for Medical Software Delivery (MSD)
 
-Automated end-to-end UI tests for the Olympus Medical Software Delivery web application using Selenium WebDriver and Pytest. The suite covers login, upload, and software management flows with page objects and reusable utilities.
+Automated end-to-end UI tests for the Medical Software Delivery web application using Selenium WebDriver and Pytest. The suite covers login, upload, and software management flows with page objects and reusable utilities.
 
 > Note: This repository currently contains sample/staging credentials in config.yaml that should never be used in production. See Security and secrets section below for remediation steps.
 
